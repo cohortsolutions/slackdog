@@ -14,6 +14,8 @@ class Papertrail
     heroku_addon_info: /source=(?<source>[^\s]+) addon=(?<addon>[^\s]+) (?<info>((?:sample#[^\s]+=[^\s]+)\s?)*)\z/,
     heroku_dyno_info: /source=(?<source>[^\s]+) dyno=(?<dyno>[^\s]+) (?<info>((?:sample#[^\s]+=[^\s]+)\s?)*)\z/,
     heroku_memory_stat: /Process running mem=(?<ramUsed>.+)\((?<ramPercent>[\d\.]+)%\)/,
+    heroku_router_info: /at=info method=(?<method>[^\s]+) path="(?<path>[^\"]+)" host=(?<host>[^\s]+) request_id=.* fwd="(?<ip>[^\"]+)" dyno=(?<dyno>[^\s]+) connect=\d+ms service=(?<duration>[\d]+)ms status=(?<code>[\d]+)/,
+    heroku_router_error: /at=error code=(?<errorCode>[^\s]+) desc="(?<errorDescription>[^\"]+)" method=(?<method>[^\s]+) path="(?<path>[^\"]+)" host=(?<host>[^\s]+) request_id=.* fwd="(?<ip>[^\"]+)" dyno=(?<dyno>[^\s]+) connect=\d+ms service=(?<duration>[\d]+)ms status=(?<code>[\d]+)/,
     exception_start: /(?<exception>[^\s]+) \((?<message>.+)\):\z/m,
   }.freeze
 
@@ -34,6 +36,17 @@ class Papertrail
       @app = app
       @process = process
       @log = log
+
+      preprocess
+    end
+
+    private
+
+    def preprocess
+      if process == 'heroku/router'
+        _, override_dyno = /dyno=([^\s]+)/.match(log)
+        self.dyno = "app/#{override_dyno}" if override_dyno
+      end
     end
   end
 
@@ -68,33 +81,27 @@ class Papertrail
 
     def request
       @request ||= begin
-        line = lines_for(:started).first
-        controller_line = lines_for(:processing).first
-        return if line.nil? && controller_line.nil?
-
-        result = {}
-        result.merge!(line.meta.slice('method', 'path', 'ip')) if line
-        result.merge!(controller_line.meta.slice('controller', 'action')) if controller_line
-
-        result
-      end
-    end
-
-    def response
-      @response ||= begin
+        started = lines_for(:started).first
+        controller = lines_for(:processing).first
         csrf_fail = lines_for(:csrf_fail).any?
         filter_chain_redirect = lines_for(:filter_chain_redirect).first
         redirected = lines_for(:redirected).first
         completed = lines_for(:completed).first
-        return if filter_chain_redirect.nil? && redirected.nil? && completed.nil?
+        router_info = lines_for(:heroku_router_info).first
+        router_error = lines_for(:heroku_router_error).first
+        return if started.nil? && controller.nil? && filter_chain_redirect.nil? && redirected.nil? && completed.nil?
 
         {'csrf_failed' => csrf_fail}.tap do |result|
-          if completed
-            args = completed.
-              meta.
-              slice('code', 'status', 'duration')
+          if started
+            result.merge!(started.meta.slice('method', 'path', 'ip'))
+          end
 
-            result.merge!(args)
+          if controller
+            result.merge!(controller.meta.slice('controller', 'action'))
+          end
+
+          if completed
+            result.merge!(completed.meta.slice('code', 'status', 'duration'))
           end
 
           if redirected
@@ -102,7 +109,19 @@ class Papertrail
           end
 
           if filter_chain_redirect
-            result['filter_chain_redirected'] = filter_chain_redirect.meta['method']
+            result['filter_chain_redirected_by'] = filter_chain_redirect.meta['method']
+          end
+
+          if router_info
+            %w(method path ip duration code host).each do |f|
+              result[f] ||= router_info.meta[f]
+            end
+          end
+
+          if router_error
+            %w(method path ip duration code host).each do |f|
+              result[f] ||= router_error.meta[f]
+            end
           end
         end
       end
@@ -111,10 +130,13 @@ class Papertrail
     def exception
       @exception ||= begin
         line = lines_for(:exception_start).first
-        return unless line
+        router_error = lines_for(:heroku_router_error).first
+        return unless line || router_error
 
-        message = line.meta['message']
-        match = /(?<subtype>.+): (?<innerMessage>.+)/.match(message)
+        if line
+          message = line.meta['message']
+          match = /(?<subtype>.+): (?<innerMessage>.+)/.match(message)
+        end
 
         if match
           details = match.named_captures
@@ -122,10 +144,15 @@ class Papertrail
           message = details['innerMessage'].strip
         end
 
+        if router_error
+          router_error_message = router_error.meta['errorDescription']
+        end
+
         {
           'type' => line.meta['exception'],
           'message' => message,
           'subtype' => subtype,
+          'router_error' => router_error_message,
           'backtrace' => lines_for(:exception_trace).map do |trace|
             trace.meta.slice('file', 'line', 'method')
           end

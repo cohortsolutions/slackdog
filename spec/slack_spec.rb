@@ -245,6 +245,8 @@ RSpec.describe Slack do
       attachments = []
       envelope_data = {}
 
+      pp attachments
+
       allow(Papertrail).to receive(:log_lines_between).and_return(log_lines)
       expect(Slack).to receive(:send_message).with(attachments, envelope_data)
 

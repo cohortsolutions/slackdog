@@ -65,28 +65,30 @@ class Slack
 
     def send_messages(events, envelope_data)
       attachments = []
-      event_pool = events.to_a
       current_request_group = []
 
-      while event_pool.any?
-        current = event_pool.shift
+      events.group_by(&:app).each do |app, es|
+        event_pool = es.to_a
+        while event_pool.any?
+          current = event_pool.shift
 
-        if current.request || current.response
-          if current.exception
-            group_request_events(current_request_group, attachments)
-            current_request_group.clear
+          if current.request
+            if current.exception
+              group_request_events(current_request_group, attachments)
+              current_request_group.clear
 
-            build_exception_attachment(current, attachments)
-          else
-            current_request_group << current
+              build_exception_attachment(current, attachments)
+            else
+              current_request_group << current
+            end
+          elsif current.active_job
+            if current_request_group.any?
+              group_request_events(current_request_group, attachments)
+              current_request_group.clear
+            end
+
+            build_active_job_attachment(current, attachments)
           end
-        elsif current.active_job
-          if current_request_group.any?
-            group_request_events(current_request_group, attachments)
-            current_request_group.clear
-          end
-
-          build_active_job_attachment(current, attachments)
         end
       end
 
@@ -102,40 +104,47 @@ class Slack
       send_message(attachments, envelope_data)
     end
 
-    def request_event_text(event)
+    def request_event_text(event, show_ip: false)
       text = ''
+      request = event.request
 
-      if event.request
-        path = event.request['path'].split('?', 2).first
-        path = "#{path[0, 35]}...#{path[-5, 5]}" if path.size > 40
-
-        text += "`[#{event.request['method']}]` #{path}"
+      if request['path']
+        path = request['path'].split('?', 2).first
+        path = "#{path[0, 5]}...#{path[-35, -1]}" if path.size > 40
+        text << "`[#{request['method']}]` #{path}"
       end
 
-      if response = event.response
-        redirected = response['redirected_to']
-        if filter_chain_redirect = response['filter_chain_redirected']
-          text << " [#{filter_chain_redirect}] *->* <#{redirected}|_redirected_>"
-        elsif redirected
-          text << " [#{response['code']}] *->* <#{redirected}|_redirected_>"
-        end
+      redirected = request['redirected_to']
+      redirection_prompt = if filter_chain_redirected_by = request['filter_chain_redirected_by']
+        "_redirected by #{filter_chain_redirected_by}_"
+      elsif redirected
+        '_redirected_'
       end
 
-      if exception = event.exception
-        text += if event.exception['subtype']
-          "\n*#{event.exception['subtype']}* #{event.exception['message']}"
-        else
-          "\n*#{event.exception['message']}*"
-        end
+      if redirection_prompt
+        margin = [redirection_prompt.size, 35].min
+        text << " *->* <#{redirected}|#{redirection_prompt.ljust(margin)}>"
+      end
+
+      if show_ip && ip = event.request['ip']
+        text << " (#{ip})"
       end
 
       text
     end
 
     def group_request_events(events, attachments)
-      result = events.flat_map { |e| request_event_text(e) }.join("\n")
+      result = []
+      events.
+        group_by { |e| e.request['ip'] }.
+        each do |ip, es|
+          es.each_with_index do |e, i|
+            result << request_event_text(e, show_ip: i == 0)
+          end
+        end
+
       attachments << {
-        'text' => result,
+        'text' => result.join("\n"),
         'mrkdwn_in' => %w{text}
       } unless result.empty?
     end
@@ -144,11 +153,16 @@ class Slack
       fallback = if event.exception['subtype']
         "[#{event.app}] *#{event.exception['subtype']}* '#{event.exception['message']}'."
       else
-        "[#{event.app}] #{event.exception['message']}"
+        "[#{event.app}] *#{event.exception['type']}* '#{event.exception['message']}'"
+      end
+
+      if router_error = event.exception['router_error']
+        fallback << " (#{router_error})"
       end
 
       text = [
-        request_event_text(event),
+        request_event_text(event, show_ip: true),
+        fallback,
         backtrace_lines_from(event.exception['backtrace'])
       ]
 
@@ -272,19 +286,42 @@ class Slack
     end
 
     def backtrace_lines_from(backtrace)
+      max_allowed_length = 50
       max_file_length = backtrace.map { |t| t['file'].size }.max
-      file_path_margin = [max_file_length, 50].min + 2
+      file_path_margin = [max_file_length, max_allowed_length].min + 2
 
-      result = backtrace.map do |trace|
-        internal_file = trace['file'].start_with?('app/') || trace['file'].start_with?('/app/')
-        filepath = ''
-        filepath += internal_file ? '* ' : '  '
-        filepath += trace['file'][0..50]
+      internal_file_prefix = ['app'].freeze
+      stripped_prefixes = ['app'].freeze
+      ignored_prefixes = ['lib'].freeze
 
-        "#{filepath.ljust(file_path_margin)}:#{trace['line'].rjust(4)} in #{trace['method']}"
-      end.join("\n")
+      result = []
+      ignored_count = 0
+      backtrace.each do |trace|
+        parts = trace['file'].split('/')
+        prefix = parts[0]
 
-      "```\n#{result}\n```"
+        if ignored_prefixes.include?(prefix)
+          ignored_count += 1
+          next
+        end
+
+        if ignored_count > 0
+          result << "[+#{ignored_count} omitted]"
+          ignored_count = 0
+        end
+
+        parts.shift if stripped_prefixes.include?(prefix)
+        filepath = parts.join('/')[0..max_allowed_length]
+
+        parts = []
+        parts << '* ' if internal_file_prefix.include?(prefix)
+        parts << filepath.ljust(file_path_margin)
+        line_number = trace['line'].rjust(4)
+
+        result << "#{parts.join}:#{line_number} in #{trace['method']}"
+      end
+
+      "```\n#{result.join("\n")}\n```"
     end
 
     def send_message(attachments, envelope_data)
