@@ -10,5 +10,6 @@ gem 'papertrail'
 
 group :development, :test do
   gem 'rspec'
+  gem 'webmock'
   gem 'pry-byebug'
 end

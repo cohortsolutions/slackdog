@@ -102,6 +102,8 @@ class Slack
 
       return if attachments.empty?
       send_message(attachments, envelope_data)
+
+      attachments
     end
 
     def request_event_text(event, show_ip: false)
@@ -110,7 +112,7 @@ class Slack
 
       if request['path']
         path = request['path'].split('?', 2).first
-        path = "#{path[0, 5]}...#{path[-35, -1]}" if path.size > 40
+        path = "#{path[0..4]}...#{path[-35..-1]}" if path.size > 43 # 5 + 35 + 3 (for ...)
         text << "`[#{request['method']}]` #{path}"
       end
 
@@ -297,7 +299,7 @@ class Slack
       result = []
       ignored_count = 0
       backtrace.each do |trace|
-        parts = trace['file'].split('/')
+        parts = trace['file'].split('/').reject(&:empty?)
         prefix = parts[0]
 
         if ignored_prefixes.include?(prefix)
