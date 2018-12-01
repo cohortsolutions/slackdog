@@ -134,6 +134,7 @@ class Papertrail
         return unless line || router_error
 
         if line
+          type = line.meta['exception']
           message = line.meta['message']
           match = /(?<subtype>.+): (?<innerMessage>.+)/.match(message)
         end
@@ -149,7 +150,7 @@ class Papertrail
         end
 
         {
-          'type' => line.meta['exception'],
+          'type' => type,
           'message' => message,
           'subtype' => subtype,
           'router_error' => router_error_message,
@@ -233,7 +234,7 @@ class Papertrail
     end
   end
 
-  class << self
+    class << self
     def compile(min, max)
       lines = log_lines_between(min, max).map do |line|
         LogLine.new(line)
@@ -252,14 +253,7 @@ class Papertrail
 
     def log_lines_between(min, max)
       result = `papertrail --min-time '#{min}' --max-time '#{max}'`
-      result.split("\n").tap do |result|
-        puts ''
-        puts ''
-        puts ''
-        puts result
-        puts ''
-        puts ''
-      end
+      result.split("\n")
     end
   end
 
