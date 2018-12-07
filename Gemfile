@@ -8,6 +8,7 @@ gem 'sinatra'
 gem 'redis'
 gem 'httparty'
 gem 'papertrail'
+gem 'octokit'
 
 group :development, :test do
   gem 'rspec'
