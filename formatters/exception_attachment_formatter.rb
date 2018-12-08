@@ -8,20 +8,23 @@ class ExceptionAttachmentFormatter < RequestAttachmentFormatter
   IGNORED_PREFIXES = ['lib'].freeze
 
   def to_payload
-    fallback = if event.exception['subtype']
-      "[#{event.app}] *#{event.exception['subtype']}* '#{event.exception['message']}'."
+    exception = event.exception
+    return unless exception
+
+    fallback = if exception['subtype']
+      "[#{event.app}] *#{exception['subtype']}* '#{exception['message']}'."
     else
-      "[#{event.app}] *#{event.exception['type']}* '#{event.exception['message']}'"
+      "[#{event.app}] *#{exception['type']}* '#{exception['message']}'"
     end
 
-    if router_error = event.exception['router_error']
+    if router_error = exception['router_error']
       fallback << " (#{router_error})"
     end
 
     text = [
-      request_event_text(event, show_ip: true),
+      request_event_text(show_ip: true),
       fallback,
-      backtrace_lines_from(event.exception['backtrace'])
+      backtrace_lines_from(exception['backtrace'])
     ].compact
 
     {
