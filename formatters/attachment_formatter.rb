@@ -1,4 +1,9 @@
 class AttachmentFormatter
+  BACKTRACE_MAX_LENGTH = 50
+
+  STRIPPED_PREFIXES = ['app'].freeze
+  IGNORED_PREFIXES = ['lib'].freeze
+
   attr_reader :event
 
   def initialize(event)
@@ -20,7 +25,7 @@ class AttachmentFormatter
     result = []
     ignored_count = 0
     backtrace.each do |trace|
-      parts = trace['file'].split('/').reject(&:empty?)
+      parts = trace['file_parts']
       prefix = parts[0]
 
       if IGNORED_PREFIXES.include?(prefix)
@@ -37,7 +42,7 @@ class AttachmentFormatter
       filepath = parts.join('/')[0..BACKTRACE_MAX_LENGTH]
 
       parts = []
-      parts << '* ' if INTERNAL_FILE_PREFIX.include?(prefix)
+      parts << '* ' if trace['internal']
       parts << filepath.ljust(file_path_margin)
       line_number = trace['line'].rjust(4)
 

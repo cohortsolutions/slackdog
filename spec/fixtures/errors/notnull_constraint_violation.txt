@@ -1,0 +1,8 @@
+Dec 07 12:48:21 some_app app/web.5:  Started PUT "/admin/organisations/ap:XXXX/products.json" for 54.225.62.251 at 2018-12-07 02:48:20 +0000
+Dec 07 12:48:21 some_app app/web.5:  Processing by Admin::Organisations::ProductsController#update as JSON
+Dec 07 12:48:21 some_app app/web.5:  Completed 500 Internal Server Error in 56ms (ActiveRecord: 21.7ms)
+Dec 07 12:48:21 some_app app/web.5:  ActiveRecord::StatementInvalid (PG::NotNullViolation: ERROR:  null value in column "app_features" violates not-null constraint
+Dec 07 12:48:21 some_app app/web.5:  : UPDATE "organisations" SET "app_features" = $1, "enabled_apps" = $2, "updated_at" = $3 WHERE "organisations"."id" = $4):
+Dec 07 12:48:21 some_app app/web.5:    app/controllers/admin/organisations/products_controller.rb:10:in `update'
+Dec 07 12:48:21 some_app app/web.5:    lib/rack_headers.rb:71:in `_call'
+Dec 07 12:48:21 some_app app/web.5:    lib/rack_headers.rb:67:in `call'

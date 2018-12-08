@@ -2,7 +2,8 @@ require 'octokit'
 
 class GithubService
   APP_MAP = {
-    'cohortflow' => 'cohortsolutions/cohortflow'
+    'cohortflow' => 'cohortsolutions/cohortflow',
+    'cohortpay-web' => 'cohortsolutions/cohortpay'
   }.freeze
 
   class << self
@@ -17,14 +18,17 @@ class GithubService
       contents = begin
         client.contents(repo, path: path, accept: 'application/vnd.github.v3.raw')
       rescue Octokit::NotFound => e
-        ''
+        return nil
       end
 
       index = line - 1
       lines = contents.split("\n")
       return unless index < lines.size
 
-      lines[index].strip
+      {
+        focus: lines[index].strip,
+        context: lines[[0, index - 2].max..[index + 2, lines.size - 1].min]
+      }
     end
   end
 end

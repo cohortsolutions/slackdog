@@ -1,0 +1,109 @@
+Dec 07 14:48:51 cohortarrivals heroku/router: at=info method=GET path="/" host=cohortarrivals.com request_id=fa60a40f-9c67-47d8-8df1-8fa5d46de35c fwd="82.103.139.165" dyno=web.1 connect=0ms service=10ms status=302 bytes=511 protocol=https
+Dec 07 14:48:51 cohortpay-web heroku/router: at=info method=GET path="/zh-CN/identity?student_transaction%5Bagent_payment_request_id%5D=8033&student_transaction%5Binvoice_id%5D%5B%5D=41725&student_transaction%5Bpayment_method%5D=account%3A201" host=payments.cohortgo.com request_id=d0f28cbf-ceec-4250-94e4-47ed0e6a737e fwd="49.81.94.45" dyno=web.2 connect=0ms service=120ms status=500 bytes=2301 protocol=https
+Dec 07 14:48:51 cohortpay-web app/web.2: Sent data receiptCPS02687475.pdf (1.4ms)
+Dec 07 14:48:51 cohortpay-web app/web.2: Completed 200 OK in 965ms (Views: 1.2ms | ActiveRecord: 16.8ms)
+Dec 07 14:48:51 cohortpay-web app/web.2: Started GET "/zh-CN/identity?student_transaction%5Bagent_payment_request_id%5D=8033&student_transaction%5Binvoice_id%5D%5B%5D=41725&student_transaction%5Bpayment_method%5D=account%3A201" for 49.81.94.45 at 2018-12-07 04:48:50 +0000
+Dec 07 14:48:51 cohortpay-web app/web.2: Processing by IdentitiesController#show as HTML
+Dec 07 14:48:51 cohortpay-web app/web.2:   Parameters: {"student_transaction"=>{"agent_payment_request_id"=>"8033", "invoice_id"=>["41725"], "payment_method"=>"account:201"}, "locale"=>"zh-CN"}
+Dec 07 14:48:51 cohortpay-web app/web.2: Completed 500 Internal Server Error in 6ms (ActiveRecord: 0.0ms)
+Dec 07 14:48:51 cohortarrivals app/web.1: Started GET "/" for 82.103.139.165 at 2018-12-07 04:48:50 +0000
+Dec 07 14:48:51 cohortflow-demo app/web.1: Started POST "/commission_invoices/10913/adjustments.json" for 103.27.135.93 at 2018-12-07 04:48:50 +0000
+Dec 07 14:48:51 cohortpay-web heroku/router: at=info method=GET path="/en/transactions/CPS02687475.pdf?token=BAhJIhBDUFMwMjY4NzQ3NQY6BkVU--c36118879c7df220454aeb4232056436a63d1027" host=payments.cohortgo.com request_id=7629d371-ba19-4079-bc54-a3fa26cf5ac1 fwd="54.198.135.21" dyno=web.2 connect=0ms service=988ms status=200 bytes=118603 protocol=https
+Dec 07 14:48:51 cohortpay-web app/web.2: NoMethodError (undefined method `agent_payment_requests' for nil:NilClass):
+Dec 07 14:48:51 cohortpay-web app/web.2:   app/controllers/concerns/transaction_payment_methods.rb:58:in `agent_payment_request'
+Dec 07 14:48:51 cohortpay-web app/web.2:   app/controllers/concerns/transaction_payment_methods.rb:81:in `maybe_use_payment_request_partner'
+Dec 07 14:48:51 cohortpay-web app/web.2:   lib/rack_headers.rb:72:in `_call'
+Dec 07 14:48:51 cohortpay-web app/web.2:   lib/rack_headers.rb:68:in `call'
+Dec 07 14:48:51 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [b9772aeb-3acb-4299-9ac0-e5a95154d6e9] Command :: file -b --mime '/tmp/3f7c80538928047918bc7dc7141cb35c20181207-4-7hy8e4.pdf'
+Dec 07 14:48:51 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [b9772aeb-3acb-4299-9ac0-e5a95154d6e9] Command :: file -b --mime '/tmp/3f7c80538928047918bc7dc7141cb35c20181207-4-1v3krtj.pdf'
+Dec 07 14:48:51 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [b9772aeb-3acb-4299-9ac0-e5a95154d6e9] [paperclip] saving stored_documents/files/original/f1387ede9a482b4a5daa6e05c5b559339618f2cc.pdf
+Dec 07 14:48:51 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [b9772aeb-3acb-4299-9ac0-e5a95154d6e9] [AWS S3 200 0.065496 0 retries] put_object(:acl=>:private,:bucket_name=>"cohortpay-transact-assets",:content_length=>117662,:content_type=>"application/pdf",:data=>Paperclip::UriAdapter: CPS02687475.pdf,:key=>"stored_documents/files/original/f1387ede9a482b4a5daa6e05c5b559339618f2cc.pdf")
+Dec 07 14:48:51 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [b9772aeb-3acb-4299-9ac0-e5a95154d6e9] Performed StoredDocumentProcessor from QueueClassic(default) in 1218.92ms
+Dec 07 14:48:51 cohortarrivals app/web.1: Processing by LandingController#index as HTML
+Dec 07 14:48:51 cohortarrivals app/web.1: Redirected to https://cohortarrivals.com/en
+Dec 07 14:48:51 cohortarrivals app/web.1: Filter chain halted as :set_locale rendered or redirected
+Dec 07 14:48:51 cohortarrivals app/web.1: Completed 302 Found in 2ms (ActiveRecord: 0.0ms)
+Dec 07 14:48:51 cohortflow-demo app/web.1: Processing by CommissionInvoices::AdjustmentsController#create as JSON
+Dec 07 14:48:51 cohortflow-demo app/web.1:   Parameters: {"adjustment"=>{"_nonce"=>0.22248794460738908, "date"=>"2018-12-07T04:48:15.643Z", "description"=>"AGENT INVOICE 27", "amount"=>"0"}, "commission_invoice_id"=>"10913"}
+Dec 07 14:48:51 cohortpay-web heroku/router: at=info method=GET path="/transactions/CPS22569710.pdf?token=BAhJIhBDUFMyMjU2OTcxMAY6BkVU--bb5b9bcd0da3c400f47b4bb8a65d3458614c3827" host=payments.cohortgo.com request_id=b577306f-b4f8-40af-8686-ef8d0c4c463a fwd="54.198.135.21" dyno=web.1 connect=0ms service=40ms status=302 bytes=729 protocol=https
+Dec 07 14:48:51 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [9e765eda-dd33-4343-bbac-df2a81154319] Performing StoredDocumentProcessor from QueueClassic(default) with arguments: gid://cohortpay-transact/StoredDocument/61058, nil
+Dec 07 14:48:51 cohortpay-web app/web.1: Started GET "/transactions/CPS22569710.pdf?token=BAhJIhBDUFMyMjU2OTcxMAY6BkVU--bb5b9bcd0da3c400f47b4bb8a65d3458614c3827" for 54.198.135.21 at 2018-12-07 04:48:51 +0000
+Dec 07 14:48:51 cohortpay-web app/web.1: Processing by TransactionsController#show as PDF
+Dec 07 14:48:51 cohortpay-web app/web.1:   Parameters: {"token"=>"BAhJIhBDUFMyMjU2OTcxMAY6BkVU--bb5b9bcd0da3c400f47b4bb8a65d3458614c3827", "id"=>"CPS22569710"}
+Dec 07 14:48:51 cohortpay-web app/web.1: Redirected to https://payments.cohortgo.com/en/transactions/CPS22569710.pdf?token=BAhJIhBDUFMyMjU2OTcxMAY6BkVU--bb5b9bcd0da3c400f47b4bb8a65d3458614c3827
+Dec 07 14:48:51 cohortpay-web app/web.1: Filter chain halted as :set_locale rendered or redirected
+Dec 07 14:48:51 cohortpay-web app/web.1: Completed 302 Found in 10ms (ActiveRecord: 0.0ms)
+Dec 07 14:48:51 cohortpay-web app/web.2: Started GET "/en/transactions/CPS22569710.pdf?token=BAhJIhBDUFMyMjU2OTcxMAY6BkVU--bb5b9bcd0da3c400f47b4bb8a65d3458614c3827" for 54.198.135.21 at 2018-12-07 04:48:51 +0000
+Dec 07 14:48:51 cohortpay-web app/web.2: Processing by TransactionsController#show as PDF
+Dec 07 14:48:51 cohortpay-web app/web.2:   Parameters: {"token"=>"BAhJIhBDUFMyMjU2OTcxMAY6BkVU--bb5b9bcd0da3c400f47b4bb8a65d3458614c3827", "locale"=>"en", "id"=>"CPS22569710"}
+Dec 07 14:48:51 cohortarrivals heroku/router: at=info method=GET path="/en" host=cohortarrivals.com request_id=8fd08da1-dc3c-4eb9-b0f9-99613b215068 fwd="82.103.139.165" dyno=web.1 connect=0ms service=36ms status=200 bytes=11753 protocol=https
+Dec 07 14:48:51 cohortarrivals app/web.1: Started GET "/en" for 82.103.139.165 at 2018-12-07 04:48:51 +0000
+Dec 07 14:48:51 cohortarrivals app/web.1: Processing by LandingController#index as HTML
+Dec 07 14:48:51 cohortarrivals app/web.1:   Parameters: {"locale"=>"en"}
+Dec 07 14:48:51 cohortarrivals app/web.1:   Rendered landing/_partner_login.html.erb (0.5ms)
+Dec 07 14:48:51 cohortarrivals app/web.1:   Rendered layouts/_questions.html.erb (0.3ms)
+Dec 07 14:48:51 cohortarrivals app/web.1:   Rendered landing/index.html.erb within layouts/application (4.8ms)
+Dec 07 14:48:51 cohortarrivals app/web.1:   Rendered layouts/_typekit.html.erb (0.0ms)
+Dec 07 14:48:51 cohortarrivals app/web.1:   Rendered layouts/_banner.html.erb (2.6ms)
+Dec 07 14:48:51 cohortarrivals app/web.1:   Rendered layouts/_beacon.html.erb (0.1ms)
+Dec 07 14:48:51 cohortarrivals app/web.1:   Rendered layouts/_footer.html.erb (2.4ms)
+Dec 07 14:48:51 cohortarrivals app/web.1:   Rendered vendor/bundle/ruby/2.3.0/bundler/gems/cohort-core-21de8356087e/app/views/cohort_core/_analytics.html.erb (0.1ms)
+Dec 07 14:48:51 cohortarrivals app/web.1: Completed 200 OK in 24ms (Views: 12.9ms | ActiveRecord: 6.5ms)
+Dec 07 14:48:51 cohortpay-transact app/web.3: Started GET "/transactions/CPS22569710.json" for 54.224.117.63 at 2018-12-07 04:48:51 +0000
+Dec 07 14:48:51 cohortpay-transact app/web.3: Processing by TransactionsController#show as JSON
+Dec 07 14:48:51 cohortpay-transact app/web.3:   Parameters: {"id"=>"CPS22569710"}
+Dec 07 14:48:51 cohortpay-transact app/web.3:   Rendered transactions/_details.json.jbuilder (176.7ms)
+Dec 07 14:48:51 cohortpay-transact app/web.3:   Rendered transactions/show.json.jbuilder (179.6ms)
+Dec 07 14:48:51 cohortpay-transact app/web.3: Completed 200 OK in 202ms (Views: 73.1ms | ActiveRecord: 117.9ms)
+Dec 07 14:48:51 cohortpay-knox heroku/router: at=info method=GET path="/cas/app_token.json?app=http://cohortsim.test/admin/organisations/sync_status.json" host=knox.cohortpay.com request_id=53f5140e-e738-4dd8-a500-1f865c293d4a fwd="27.32.67.186" dyno=web.1 connect=1ms service=37ms status=200 bytes=1533 protocol=https
+Dec 07 14:48:51 cohortpay-transact heroku/router: at=info method=GET path="/transactions/CPS22569710.json" host=transact.cohortpay.com request_id=c9de62e9-b99d-4fcc-8117-0a5afa45bc50 fwd="54.224.117.63" dyno=web.3 connect=1ms service=220ms status=200 bytes=2072 protocol=https
+Dec 07 14:48:52 cohortpay-dispatch heroku/router: at=info method=GET path="/api/tasks.json?q%5Bdescription_cont%5D=&scope=admin&page=1&order=" host=dispatch.cohortpay.com request_id=3e178ada-be29-4a3a-b15c-f5c33d43b716 fwd="27.32.67.186" dyno=web.1 connect=1ms service=65ms status=304 bytes=642 protocol=https
+Dec 07 14:48:52 cohortgo heroku/router: at=info method=GET path="/privacy-policy" host=cohortgo.com request_id=6880d02f-b74b-481c-b3b8-7c5c7d599bb2 fwd="178.63.26.114" dyno=web.1 connect=0ms service=18ms status=200 bytes=22613 protocol=https
+Dec 07 14:48:52 cohortpay-dispatch heroku/router: at=info method=GET path="/api/tasks.json?q%5Bdescription_cont%5D=&q%5Btags_intersects%5D%5B%5D=oshcaustralia&q%5Btags_intersects%5D%5B%5D=oshc+australia&q%5Btags_intersects%5D%5B%5D=policy&q%5Btags_intersects%5D%5B%5D=rejected-policy&q%5Btags_intersects%5D%5B%5D=stalled-policy&q%5Btags_intersects%5D%5B%5D=nab-transact&q%5Btags_intersects%5D%5B%5D=processed-policy&q%5Btags_intersects%5D%5B%5D=pending-contact&q%5Btags_intersects%5D%5B%5D=cancellation-request&scope=incomplete&page=1&order=since_asc" host=dispatch.cohortpay.com request_id=1fd71070-f603-4d7a-ac5a-41c29528b410 fwd="27.32.67.186" dyno=web.1 connect=0ms service=81ms status=304 bytes=642 protocol=https
+Dec 07 14:48:52 cohortflow app/web.4: Started POST "/rules/simulate.json" for 182.239.214.185 at 2018-12-07 04:48:51 +0000
+Dec 07 14:48:52 cohortpay-knox app/web.1: Started GET "/cas/app_token.json?app=http://cohortsim.test/admin/organisations/sync_status.json" for 27.32.67.186 at 2018-12-07 04:48:51 +0000
+Dec 07 14:48:52 cohortgo app/web.1: I, [2018-12-07T04:48:51.797715 #4]  INFO -- : [a340b539-b551-4015-acb4-00d97e43d303] Started GET "/privacy?_csid=hzetz8tvc5s75gps6xetrjkpwfr5dn" for 51.38.128.241 at 2018-12-07 04:48:51 +0000
+Dec 07 14:48:52 cohortflow app/web.4: Processing by RulesController#simulate as JSON
+Dec 07 14:48:52 cohortflow app/web.4:   Parameters: {"object"=>"student", "stage"=>"created", "actionLabel"=>"Creating this Student", "title"=>"Mrs", "given_name"=>"Sithmi", "middle_name"=>"Supunsara", "family_name"=>"Wickrama Arachchige", "gender"=>"female", "email"=>"bodhika@aus-key.com.au", "mobile"=>"0433320399", "country"=>"LK", "passport_number"=>"N7276704", "destination_country"=>"AU", "user"=>{"id"=>"4858"}, "branch"=>{"id"=>"2679"}, "basic_study_application"=>{"institution_name"=>"Melbourne Institute of Technical Education"}, "dob"=>"1996-05-06", "destination_address"=>{"country"=>"AU", "street_type"=>"", "region"=>""}}
+Dec 07 14:48:52 cohortflow app/web.4: Completed 200 OK in 37ms (Views: 3.8ms | ActiveRecord: 7.0ms)
+Dec 07 14:48:52 cohortpay-knox app/web.1: Processing by CasServerController#app_token as JSON
+Dec 07 14:48:52 cohortpay-knox app/web.1:   Parameters: {"app"=>"http://cohortsim.test/admin/organisations/sync_status.json"}
+Dec 07 14:48:52 cohortpay-knox app/web.1: Completed 200 OK in 33ms (Views: 0.4ms | ActiveRecord: 0.0ms)
+Dec 07 14:48:52 cohortgo app/web.1: I, [2018-12-07T04:48:51.887857 #4]  INFO -- : [6880d02f-b74b-481c-b3b8-7c5c7d599bb2] Started GET "/privacy-policy" for 178.63.26.114 at 2018-12-07 04:48:51 +0000
+Dec 07 14:48:52 cohortgo app/web.1: I, [2018-12-07T04:48:51.889310 #4]  INFO -- : [6880d02f-b74b-481c-b3b8-7c5c7d599bb2] Processing by LandingController#privacy_policy as HTML
+Dec 07 14:48:52 cohortgo app/web.1: I, [2018-12-07T04:48:51.900291 #4]  INFO -- : [6880d02f-b74b-481c-b3b8-7c5c7d599bb2] Completed 200 OK in 11ms (Views: 10.5ms | ActiveRecord: 0.0ms)
+Dec 07 14:48:52 cohortflow heroku/router: at=info method=POST path="/rules/simulate.json" host=cohortflow.com request_id=5a4e0de1-7c5a-4fc3-b36c-8dfdf3facfc0 fwd="182.239.214.185" dyno=web.4 connect=1ms service=62ms status=200 bytes=1046 protocol=https
+Dec 07 14:48:52 cohortgo heroku/router: at=info method=GET path="/privacy?_csid=hzetz8tvc5s75gps6xetrjkpwfr5dn" host=cohortgo.com request_id=a340b539-b551-4015-acb4-00d97e43d303 fwd="51.38.128.241" dyno=web.1 connect=0ms service=2ms status=301 bytes=409 protocol=https
+Dec 07 14:48:52 cohortpay-web heroku/router: at=info method=GET path="/en/transactions/CPS22569710.pdf?token=BAhJIhBDUFMyMjU2OTcxMAY6BkVU--bb5b9bcd0da3c400f47b4bb8a65d3458614c3827" host=payments.cohortgo.com request_id=d058b60c-af88-416e-b4aa-2a83727daf5a fwd="54.198.135.21" dyno=web.2 connect=0ms service=1080ms status=200 bytes=118503 protocol=https
+Dec 07 14:48:52 cohortpay-web app/web.2: Sent data receiptCPS22569710.pdf (1.5ms)
+Dec 07 14:48:52 cohortpay-web app/web.2: Completed 200 OK in 1056ms (Views: 1.2ms | ActiveRecord: 16.6ms)
+Dec 07 14:48:52 cohortpay-web app/web.2: Started GET "/en/about-payments?_csid=6eq1uieekbl2rnt5vklcd36zpnepdn" for 46.229.168.154 at 2018-12-07 04:48:52 +0000
+Dec 07 14:48:52 cohortpay-web app/web.2: Processing by AboutController#payments as HTML
+Dec 07 14:48:52 cohortpay-web app/web.2:   Parameters: {"_csid"=>"6eq1uieekbl2rnt5vklcd36zpnepdn", "locale"=>"en"}
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [9e765eda-dd33-4343-bbac-df2a81154319] Command :: file -b --mime '/tmp/f2aac1082b8283a83b54c617d53a4a0f20181207-4-urctl5.pdf'
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [9e765eda-dd33-4343-bbac-df2a81154319] Command :: file -b --mime '/tmp/f2aac1082b8283a83b54c617d53a4a0f20181207-4-1pdip67.pdf'
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [9e765eda-dd33-4343-bbac-df2a81154319] [paperclip] saving stored_documents/files/original/d6310a40c7e0ed25ce7bff17c643e6f4b70de3cc.pdf
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [9e765eda-dd33-4343-bbac-df2a81154319] [AWS S3 200 0.032435 0 retries] put_object(:acl=>:private,:bucket_name=>"cohortpay-transact-assets",:content_length=>117562,:content_type=>"application/pdf",:data=>Paperclip::UriAdapter: CPS22569710.pdf,:key=>"stored_documents/files/original/d6310a40c7e0ed25ce7bff17c643e6f4b70de3cc.pdf")
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [9e765eda-dd33-4343-bbac-df2a81154319] Performed StoredDocumentProcessor from QueueClassic(default) in 1281.91ms
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [e4fe29de-506a-48e1-a089-43cebcde43d7] Performing StoredDocumentProcessor from QueueClassic(default) with arguments: gid://cohortpay-transact/StoredDocument/60912, "ying.lee@cohortsolutions.com"
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [e4fe29de-506a-48e1-a089-43cebcde43d7] [AWS S3 200 0.013336 0 retries] head_object(:bucket_name=>"cohortpay-transact-assets",:key=>"stored_documents/files/original/e087175a5b9f705788fd9690d761b99837bc873c.pdf")
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [e4fe29de-506a-48e1-a089-43cebcde43d7] Command :: file -b --mime '/tmp/61bee2bfc42dc561b93f1a363a33c6be20181207-4-13rgfit.pdf'
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [e4fe29de-506a-48e1-a089-43cebcde43d7] Command :: file -b --mime '/tmp/61bee2bfc42dc561b93f1a363a33c6be20181207-4-vy270p.pdf'
+Dec 07 14:48:52 cohortpay-web app/web.2: Completed 200 OK in 207ms (Views: 190.1ms | ActiveRecord: 14.1ms)
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [e4fe29de-506a-48e1-a089-43cebcde43d7] [paperclip] deleting stored_documents/files/original/e087175a5b9f705788fd9690d761b99837bc873c.pdf
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [e4fe29de-506a-48e1-a089-43cebcde43d7] [AWS S3 204 0.015223 0 retries] delete_object(:bucket_name=>"cohortpay-transact-assets",:key=>"stored_documents/files/original/e087175a5b9f705788fd9690d761b99837bc873c.pdf")
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [e4fe29de-506a-48e1-a089-43cebcde43d7] [paperclip] saving stored_documents/files/original/024be41dcc91d9247a9db81b85b45725d780e2bd.pdf
+Dec 07 14:48:52 cohortpay-web heroku/router: at=info method=GET path="/en/about-payments?_csid=6eq1uieekbl2rnt5vklcd36zpnepdn" host=payments.cohortgo.com request_id=74819721-a464-4fd8-8e7d-b1c077ee6595 fwd="46.229.168.154" dyno=web.2 connect=0ms service=771ms status=200 bytes=484998 protocol=https
+Dec 07 14:48:52 cohortpay-web app/web.2: Started GET "/api/rates.json?scope=&page=1&order=" for 137.97.107.237 at 2018-12-07 04:48:52 +0000
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [e4fe29de-506a-48e1-a089-43cebcde43d7] [AWS S3 200 0.028365 0 retries] put_object(:acl=>:private,:bucket_name=>"cohortpay-transact-assets",:content_length=>110977,:content_type=>"application/pdf",:data=>Paperclip::UriAdapter: 825c2a5cb42aba6fa667269366209373cd13bbc3.pdf,:key=>"stored_documents/files/original/024be41dcc91d9247a9db81b85b45725d780e2bd.pdf")
+Dec 07 14:48:52 cohortpay-web app/web.2: Processing by API::RatesController#index as JSON
+Dec 07 14:48:52 cohortpay-web app/web.2:   Parameters: {"scope"=>"", "page"=>"1", "order"=>""}
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [StoredDocumentProcessor] [e4fe29de-506a-48e1-a089-43cebcde43d7] Performed StoredDocumentProcessor from QueueClassic(default) in 188.77ms
+Dec 07 14:48:52 cohortpay-transact app/worker.1: [ActiveJob] [ProofProcessor] [cd0ee792-3e25-4ac9-a512-71aae8c16470] Performing ProofProcessor from QueueClassic(default) with arguments: gid://cohortpay-transact/Invoice/29590
+Dec 07 14:48:52 cohortpay-transact heroku/router: at=info method=GET path="/rates.json?sell_ccys[]=AUD&product=cohortpay&payment_context[payer_business_id]=799&payment_context[agent_business_id]=799" host=transact.cohortpay.com request_id=5bed8aef-9862-49c1-a23b-b64f7732b461 fwd="54.224.117.63" dyno=web.2 connect=1ms service=191ms status=200 bytes=3977 protocol=https
+Dec 07 14:48:52 cohortpay-transact app/web.2: Started GET "/rates.json?sell_ccys[]=AUD&product=cohortpay&payment_context[payer_business_id]=799&payment_context[agent_business_id]=799" for 54.224.117.63 at 2018-12-07 04:48:52 +0000
+Dec 07 14:48:52 cohortpay-transact app/web.2: Processing by RatesController#index as JSON
+Dec 07 14:48:52 cohortpay-transact app/web.2:   Parameters: {"sell_ccys"=>["AUD"], "product"=>"cohortpay", "payment_context"=>{"payer_business_id"=>"799", "agent_business_id"=>"799"}}
+Dec 07 14:48:52 cohortpay-transact app/web.2: Completed 200 OK in 178ms (Views: 0.2ms | ActiveRecord: 50.3ms)
+Dec 07 14:48:52 cohortpay-web heroku/router: at=info method=GET path="/api/rates.json?scope=&page=1&order=" host=payments.cohortgo.com request_id=7de684cd-bd3d-4125-ac51-6528b4375e3c fwd="137.97.107.237" dyno=web.2 connect=1ms service=712ms status=200 bytes=4251 protocol=https
+Dec 07 14:48:52 cohortflow-demo heroku/router: at=info method=POST path="/commission_invoices/10913/adjustments.json" host=demo.s.cohortflow.com request_id=44951945-ecea-4d35-9c0f-0ae5adc3ce7c fwd="103.27.135.93" dyno=web.1 connect=1ms service=1745ms status=200 bytes=29412 protocol=https

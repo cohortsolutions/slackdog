@@ -1,12 +1,7 @@
 require './formatters/request_attachment_formatter'
+require './processors/exception_message_processor'
 
 class ExceptionAttachmentFormatter < RequestAttachmentFormatter
-  BACKTRACE_MAX_LENGTH = 50
-
-  INTERNAL_FILE_PREFIX = ['app'].freeze
-  STRIPPED_PREFIXES = ['app'].freeze
-  IGNORED_PREFIXES = ['lib'].freeze
-
   def to_payload
     exception = event.exception
     return unless exception
@@ -21,16 +16,21 @@ class ExceptionAttachmentFormatter < RequestAttachmentFormatter
       fallback << " (#{router_error})"
     end
 
+    processed = ExceptionMessageProcessor.process(event.app, exception)
+
     text = [
-      request_event_text(show_ip: true),
       fallback,
-      backtrace_lines_from(exception['backtrace'])
+      backtrace_lines_from(exception['backtrace']),
+      request_event_text(show_ip: true)
     ].compact
 
     {
       'color' => 'danger',
       'fallback' => fallback,
-      'mrkdwn_in' => ['text'],
+      'mrkdwn_in' => ['pretext', 'text'],
+      'pretext' => if processed
+        "#{processed[:message]}\n```\n#{processed[:context]}\n```"
+      end,
       'text' => text.join("\n")
     }
   end

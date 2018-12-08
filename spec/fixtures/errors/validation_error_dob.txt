@@ -1,0 +1,9 @@
+Nov 21 06:07:42 some_app app/web.1: Started POST "/admin/users/identity_push.json" for 54.205.86.120 at 2018-11-20 20:07:41 +0000
+Nov 21 06:07:42 some_app app/web.1: Processing by Admin::UsersController#identity_push as JSON
+Nov 21 06:07:42 some_app app/web.1: Can't verify CSRF token authenticity
+Nov 21 06:07:42 some_app app/web.1: Completed 422 Unprocessable Entity in 34ms (ActiveRecord: 13.5ms)
+Nov 21 06:07:42 some_app app/web.1: ActiveRecord::RecordInvalid (Validation failed: Dob must be at least four years old):
+Nov 21 06:07:42 some_app app/web.1:   app/admin/system/users.rb:258:in `block (3 levels) in <top (required)>'
+Nov 21 06:07:42 some_app app/web.1:   app/admin/system/users.rb:256:in `block (2 levels) in <top (required)>'
+Nov 21 06:07:42 some_app app/web.1:   lib/rack_headers.rb:72:in `_call'
+Nov 21 06:07:42 some_app app/web.1:   lib/rack_headers.rb:68:in `call'

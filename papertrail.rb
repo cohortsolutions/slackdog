@@ -155,7 +155,12 @@ class Papertrail
           'subtype' => subtype,
           'router_error' => router_error_message,
           'backtrace' => lines_for(:exception_trace).map do |trace|
-            trace.meta.slice('file', 'line', 'method')
+            file_parts = trace.meta['file'].split('/').reject(&:empty?)
+            trace.meta.slice('line', 'method').merge({
+              'file_parts' => file_parts,
+              'file' => file_parts.join('/'),
+              'internal' => file_parts[0] == 'app'
+            })
           end
         }
       end
@@ -234,11 +239,13 @@ class Papertrail
     end
   end
 
-    class << self
+  class << self
     def compile(min, max)
-      lines = log_lines_between(min, max).map do |line|
-        LogLine.new(line)
-      end
+      compile_from(log_lines_between(min, max))
+    end
+
+    def compile_from(log_lines)
+      lines = log_lines.map { |line| LogLine.new(line) }
 
       [].tap do |events|
         new.process(lines) do |app, process, cache|
@@ -252,7 +259,7 @@ class Papertrail
     private
 
     def log_lines_between(min, max)
-      result = `papertrail --min-time '#{min}' --max-time '#{max}'`
+      result = `PAPERTRAIL_API_TOKEN=#{ENV['PAPERTRAIL_API_TOKEN']} papertrail --min-time '#{min}' --max-time '#{max}'`
       result.split("\n")
     end
   end
