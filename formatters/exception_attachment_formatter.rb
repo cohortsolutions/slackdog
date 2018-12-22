@@ -29,7 +29,13 @@ class ExceptionAttachmentFormatter < RequestAttachmentFormatter
       'fallback' => fallback,
       'mrkdwn_in' => ['pretext', 'text'],
       'pretext' => if processed
-        "#{processed[:message]}\n```\n#{processed[:context]}\n```"
+        r = processed[:message]
+
+        if processed[:context]
+          r += "\n```\n#{processed[:context]}\n```"
+        end
+
+        r
       end,
       'text' => text.join("\n")
     }
