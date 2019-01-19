@@ -1,0 +1,5 @@
+[some_app] *PG::NotNullViolation: ERROR* 'null value in column "app_features" violates not-null constraint'.
+```
+* controllers/admin/organisations/products_controller :  10 in update
+```
+`[PUT]` /admin/organisations/ap:XXXX/products.json (54.225.62.251)

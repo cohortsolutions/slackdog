@@ -8,18 +8,7 @@ RSpec.describe Slack do
 
     context 'exception logs' do
       it 'formats using the exception template' do
-        log_lines = %{
-          Nov 21 06:07:42 cohortpay-demo app/web.1: Started POST "/admin/users/identity_push.json" for 54.205.86.120 at 2018-11-20 20:07:41 +0000
-          Nov 21 06:07:42 cohortpay-demo app/web.1: Processing by Admin::UsersController#identity_push as JSON
-          Nov 21 06:07:42 cohortpay-demo app/web.1:   Parameters: {"content"=>{"id"=>1444, "watchlist_state"=>"unchecked", "passport_state"=>"unverified", "update_sequence"=>2873, "state"=>"unchecked"}, "user"=>{}}
-          Nov 21 06:07:42 cohortpay-demo app/web.1: Can't verify CSRF token authenticity
-          Nov 21 06:07:42 cohortpay-demo app/web.1: Completed 422 Unprocessable Entity in 34ms (ActiveRecord: 13.5ms)
-          Nov 21 06:07:42 cohortpay-demo app/web.1: ActiveRecord::RecordInvalid (Validation failed: Dob must be at least four years old):
-          Nov 21 06:07:42 cohortpay-demo app/web.1:   app/admin/system/users.rb:258:in `block (3 levels) in <top (required)>'
-          Nov 21 06:07:42 cohortpay-demo app/web.1:   app/admin/system/users.rb:256:in `block (2 levels) in <top (required)>'
-          Nov 21 06:07:42 cohortpay-demo app/web.1:   lib/rack_headers.rb:72:in `_call'
-          Nov 21 06:07:42 cohortpay-demo app/web.1:   lib/rack_headers.rb:68:in `call'
-        }.split("\n").map(&:strip).reject(&:empty?)
+        log_lines = File.readlines('./spec/fixtures/errors/validation_error_dob.txt')
 
         allow(Papertrail).to receive(:log_lines_between).and_return(log_lines)
 
@@ -40,21 +29,7 @@ RSpec.describe Slack do
       end
 
       it 'reports on database errors' do
-        log_lines = %{
-          Nov 21 15:10:22 cohortflow app/web.1:  Started PUT "/admin/organisations/ap:11122/products.json" for 54.167.139.215 at 2018-11-21 05:10:22 +0000
-          Nov 21 15:10:22 cohortflow app/web.1:  Processing by Admin::Organisations::ProductsController#update as JSON
-          Nov 21 15:10:22 cohortflow app/web.1:    Parameters: {"app_configs"=>{}, "enabled_apps"=>["cohortarrivals"], "app_features"=>nil, "organisation_contract_map"=>{"cohortarrivals"=>1}, "organisation_id"=>"ap:11122", "product"=>{}}
-          Nov 21 15:10:23 cohortflow app/postgres.12086:  [DATABASE] [18-1]  sql_error_code = 23502 ERROR:  null value in column "app_features" violates not-null constraint
-          Nov 21 15:10:23 cohortflow app/postgres.12086:  [DATABASE] [18-2]  sql_error_code = 23502 DETAIL:  Failing row contains (375643, Ahead Edu Vivian, UTC, null, null, null, 435342, 2018-11-21 05:10:22.195009, 2018-11-21 05:10:22.95809, null, null, null, null, null, {}, {}, f, {}, null, en, null, agent, null, null, null, null, unknown, null, f, {cohortarrivals}, null, null, null, null, null, null, null, new, {}, 1, null, basic, null, null, null, null, null, f, null, null, null, null, null, null, f, null, default, 11122, fw-p5xgatj98d, pending, null, null, null, null, null, null, {}).
-          Nov 21 15:10:23 cohortflow app/postgres.12086:  [DATABASE] [18-3]  sql_error_code = 23502 STATEMENT:  UPDATE "organisations" SET "app_features" = $1, "enabled_apps" = $2, "updated_at" = $3 WHERE "organisations"."id" = $4
-          Nov 21 15:10:23 cohortflow app/web.1:  Completed 500 Internal Server Error in 244ms (ActiveRecord: 101.1ms)
-          Nov 21 15:10:23 cohortflow app/web.1:  ActiveRecord::StatementInvalid (PG::NotNullViolation: ERROR:  null value in column "app_features" violates not-null constraint
-          Nov 21 15:10:23 cohortflow app/web.1:  DETAIL:  Failing row contains (375643, Ahead Edu Vivian, UTC, null, null, null, 435342, 2018-11-21 05:10:22.195009, 2018-11-21 05:10:22.95809, null, null, null, null, null, {}, {}, f, {}, null, en, null, agent, null, null, null, null, unknown, null, f, {cohortarrivals}, null, null, null, null, null, null, null, new, {}, 1, null, basic, null, null, null, null, null, f, null, null, null, null, null, null, f, null, default, 11122, fw-p5xgatj98d, pending, null, null, null, null, null, null, {}).
-          Nov 21 15:10:23 cohortflow app/web.1:  : UPDATE "organisations" SET "app_features" = $1, "enabled_apps" = $2, "updated_at" = $3 WHERE "organisations"."id" = $4):
-          Nov 21 15:10:23 cohortflow app/web.1:    app/controllers/admin/organisations/products_controller.rb:10:in `update'
-          Nov 21 15:10:23 cohortflow app/web.1:    lib/rack_headers.rb:71:in `_call'
-          Nov 21 15:10:23 cohortflow app/web.1:    lib/rack_headers.rb:67:in `call'
-        }.split("\n").map(&:strip).reject(&:empty?)
+        log_lines = File.readlines('./spec/fixtures/errors/notnull_constraint_violation.txt')
 
         allow(Papertrail).to receive(:log_lines_between).and_return(log_lines)
 
@@ -76,22 +51,7 @@ RSpec.describe Slack do
 
     context 'active job logs' do
       it 'formats using the job template' do
-        log_lines = %{
-          Nov 21 15:10:23 cohortflow app/worker.1:  [ActiveJob] [SyncService::PushJob] [f4f879d7-5f96-43b0-919e-d765bf3d1cd5] Failed to sync object: '{"status":500,"error":"Internal Server Error"}'
-          Nov 21 15:10:23 cohortflow app/worker.1:  [ActiveJob] [SyncService::PushJob] [f4f879d7-5f96-43b0-919e-d765bf3d1cd5] Performed SyncService::PushJob from QueueClassic(default) in 1991.14ms
-          Nov 21 15:10:23 cohortflow app/worker.1:  [ActiveJob] [SyncService::PushJob] [2db2210f-7eac-4929-8bad-02724e206e61] Performing SyncService::PushJob from QueueClassic(default) with arguments: gid://cohortflow/ContactProduct/12832, "knox+https://cohort-knowledge-graph.herokuapp.com/listeners/contact_products/push.json", gid://cohortflow/ObjectSyncStatus/40219
-          Nov 21 15:10:23 cohortflow app/worker.1:  [ActiveJob] [SyncService::PushJob] [2db2210f-7eac-4929-8bad-02724e206e61] Performed SyncService::PushJob from QueueClassic(default) in 145.35ms
-          Nov 21 15:10:23 cohortflow app/worker.1:  [ActiveJob] [IntercomCompanySyncJob] [4fb0a985-d8dc-4ef5-ba74-ffdf315fecff] Performing IntercomCompanySyncJob from QueueClassic(default) with arguments: gid://cohortflow/Organisation/375643
-          Nov 21 15:10:23 cohortflow app/worker.1:  [ActiveJob] [IntercomCompanySyncJob] [4fb0a985-d8dc-4ef5-ba74-ffdf315fecff] Performed IntercomCompanySyncJob from QueueClassic(default) in 0.11ms
-          Nov 20 20:23:54 portal-provisioning app/worker.1:  I, [2018-11-20T10:23:53.874194 #4]  INFO -- : [ActiveJob] [AgentProfileProvision::Activate] [ecbf936b-c888-4cff-ab6a-8e3989575360] Performing AgentProfileProvision::Activate (Job ID: ecbf936b-c888-4cff-ab6a-8e3989575360) from QueueClassic(default) with arguments: #<GlobalID:0x00000000071b4e58 @uri=#<URI::GID gid://cohortgo-portal-provisioning/PartnerApp/1>>, #<GlobalID:0x00000000071b4638 @uri=#<URI::GID gid://cohortgo-portal-provisioning/Activation/22>>
-          Nov 20 20:23:54 portal-provisioning app/worker.1:  D, [2018-11-20T10:23:53.876394 #4] DEBUG -- : [ActiveJob] [AgentProfileProvision::Activate] [ecbf936b-c888-4cff-ab6a-8e3989575360]   AgentProfile Load (1.3ms)  SELECT  "agent_profiles".* FROM "agent_profiles" WHERE "agent_profiles"."id" = $1 LIMIT $2  [["id", 11113], ["LIMIT", 1]]
-          Nov 20 20:23:54 portal-provisioning app/worker.1:  E, [2018-11-20T10:23:54.147463 #4] ERROR -- : [ActiveJob] [AgentProfileProvision::Activate] [ecbf936b-c888-4cff-ab6a-8e3989575360] Error performing AgentProfileProvision::Activate (Job ID: ecbf936b-c888-4cff-ab6a-8e3989575360) from QueueClassic(default) in 272.99ms: AgentProfileProvision::Base::ProvisionFailure (User does not exist):
-          Nov 20 20:23:54 portal-provisioning app/worker.1:  /app/app/jobs/agent_profile_provision/activate.rb:6:in `perform'
-          Nov 20 20:23:54 portal-provisioning app/worker.1:  /app/vendor/bundle/ruby/2.5.0/gems/activejob-5.2.0/lib/active_job/execution.rb:39:in `block in perform_now'
-          Nov 20 20:23:54 portal-provisioning app/worker.1:  /app/vendor/bundle/ruby/2.5.0/gems/activesupport-5.2.0/lib/active_support/callbacks.rb:109:in `block in run_callbacks'
-          Nov 20 20:23:54 portal-provisioning app/worker.1:  /app/vendor/bundle/ruby/2.5.0/gems/i18n-1.0.1/lib/i18n.rb:284:in `with_locale'
-          Nov 20 20:23:54 portal-provisioning app/worker.1:  /app/vendor/bundle/ruby/2.5.0/gems/activejob-5.2.0/lib/active_job/translation.rb:9:in `block (2 levels) in <module:Translation>'
-        }.split("\n").map(&:strip).reject(&:empty?)
+        log_lines = File.readlines('./spec/fixtures/errors/activerecord_failure.txt')
 
         allow(Papertrail).to receive(:log_lines_between).and_return(log_lines)
 
