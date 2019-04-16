@@ -1,4 +1,5 @@
 require 'octokit'
+require 'logger'
 
 class GithubService
   class << self
@@ -29,7 +30,14 @@ class GithubService
     private
 
     def repo_from_app(app)
-      ENV["GITHUB_APPS_#{app.upcase.gsub('-', '_')}"]
+      app_key = "GITHUB_APPS_#{app.upcase.gsub('-', '_')}"
+      ENV[app_key].tap do |value|
+        logger.debug("Github mapping key '#{app_key}' not defined") if value.nil?
+      end
+    end
+
+    def logger
+      @logger ||= Logger.new(STDOUT)
     end
   end
 end
