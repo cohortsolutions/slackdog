@@ -8,7 +8,7 @@ class GithubService
 
     def get_line(app, path, line)
       repo = repo_from_app(app)
-      return unless repo
+      return unless repo.present?
 
       contents = begin
         client.contents(repo, path: path, accept: 'application/vnd.github.v3.raw')
@@ -29,8 +29,7 @@ class GithubService
     private
 
     def repo_from_app(app)
-      repo = ENV.fetch("GITHUB_APPS_#{app.upcase.gsub('-', '_')}")
-      return repo unless repo.empty?
+      ENV["GITHUB_APPS_#{app.upcase.gsub('-', '_')}"]
     end
   end
 end
