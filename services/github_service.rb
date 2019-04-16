@@ -8,7 +8,7 @@ class GithubService
 
     def get_line(app, path, line)
       repo = repo_from_app(app)
-      return unless repo.present?
+      return if repo.nil? || repo.empty?
 
       contents = begin
         client.contents(repo, path: path, accept: 'application/vnd.github.v3.raw')
