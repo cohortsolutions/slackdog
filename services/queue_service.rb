@@ -1,6 +1,5 @@
 require 'redis'
 require 'json'
-require 'pry'
 require 'securerandom'
 
 class QueueService
