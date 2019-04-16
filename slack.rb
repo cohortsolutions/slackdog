@@ -6,10 +6,8 @@ class Slack
 
   class << self
     def process_incoming_payload(params)
-      puts "process_incoming_payload(#{params})"
-
       unless params['token'] == ENV['SLACK_TOKEN']
-        puts "[WARNING] Not a valid token"
+        puts "[WARNING] Not a valid Slack token"
         return
       end
 
@@ -26,8 +24,6 @@ class Slack
     end
 
     def event_callback(params)
-      puts "event_callback(#{params})"
-
       event = params['event']
       event_type = event['type']
       if EVENT_WHITELIST.include?(event_type)

@@ -259,7 +259,7 @@ class Papertrail
     private
 
     def log_lines_between(min, max)
-      result = `PAPERTRAIL_API_TOKEN=#{ENV['PAPERTRAIL_API_TOKEN']} papertrail --min-time '#{min}' --max-time '#{max}'`
+      result = `PAPERTRAIL_API_TOKEN=#{ENV.fetch('PAPERTRAIL_API_TOKEN')} papertrail --min-time '#{min}' --max-time '#{max}'`
       result.split("\n")
     end
   end

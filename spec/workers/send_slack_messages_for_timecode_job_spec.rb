@@ -113,6 +113,15 @@ RSpec.describe SendSlackMessagesForTimecodeJob do
       end
     end
 
+    it 'calls out to the Papertrail Service to get log lines' do
+      error_code = '500'
+      timestamp = '20190416085903'
+      reply_to = '1555446899.000700'
+
+      stub_papertrail('./spec/fixtures/errors/papertrail_cache.txt')
+      SendSlackMessagesForTimecodeJob.perform_now(error_code, timestamp, reply_to)
+    end
+
     # context 'active job logs' do
     #   it 'formats using the job template' do
     #     log_lines = File.readlines('./spec/fixtures/errors/activerecord_failure.txt')

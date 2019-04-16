@@ -1,5 +1,6 @@
 require 'webmock/rspec'
 require 'support/github_helpers'
+require 'support/papertrail_helpers'
 
 ENV['GITHUB_APPS_SOME_APP'] = 'slackdog/test'
 ENV['GITHUB_TOKEN'] = 'some.github.token'
@@ -103,4 +104,9 @@ RSpec.configure do |config|
   Kernel.srand config.seed
 
   config.include GithubHelpers
+  config.include PapertrailHelpers
+
+  config.before do
+    disable_papertrail!
+  end
 end

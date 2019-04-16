@@ -8,14 +8,14 @@ require './formatters/exception_attachment_formatter'
 require './formatters/active_job_attachment_formatter'
 
 class SendSlackMessagesForTimecodeJob < WorkerBase
-  MAX_BUFFER_SECONDS = 1
-  MIN_BUFFER_SECONDS = 35
   SECONDS_IN_DAY = 24 * 60 * 60
+  MAX_BUFFER_SECONDS = 1 / SECONDS_IN_DAY.to_f
+  MIN_BUFFER_SECONDS = 35 / SECONDS_IN_DAY.to_f
 
   def perform(error_code, timestamp, reply_to)
     origin = DateTime.parse(timestamp)
-    max = origin + (MAX_BUFFER_SECONDS / SECONDS_IN_DAY.to_f)
-    min = origin - (MIN_BUFFER_SECONDS / SECONDS_IN_DAY.to_f)
+    min = origin - MIN_BUFFER_SECONDS
+    max = origin + MAX_BUFFER_SECONDS
 
     events = Papertrail.compile(min, max)
     timelines = build_timelines(events)
