@@ -45,7 +45,7 @@ class ExceptionMessageProcessor
             line = captures['exceptionLine']
             return unless line
 
-            expression = Regexp.new("([^\\W]+)\\.#{captures['missingMethod']}")
+            expression = Regexp.new("([\\$@\\w]+)\\.#{captures['missingMethod']}")
             result = line.scan(expression).flatten.map { |r| "`#{r}`" }
 
             if result.size > 1

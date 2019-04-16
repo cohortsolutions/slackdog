@@ -10,4 +10,9 @@ module SomeHelper
     result = @company.foo
     return result.empty?
   end
+
+  def other_failing_method
+    result = "#{self.foo} - #{obj.bar} - #{self.meta.foo}"
+    return result.empty?
+  end
 end

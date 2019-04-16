@@ -5,16 +5,6 @@ RSpec.describe SendSlackMessagesForTimecodeJob do
     context 'exception logs' do
       let(:envelope) { {'channel' => '123', 'ts' => '456'} }
 
-      def stub_github(repo, file)
-        stub_request(:get, "https://api.github.com/repos/#{repo}/contents/#{file}").
-          with(headers: {
-            'Accept' => 'application/vnd.github.v3.raw',
-            'Authorization' => "token #{ENV['GITHUB_TOKEN']}",
-            'Content-Type' => 'application/json'
-          }).
-          to_return(body: File.read("./spec/fixtures/files/#{file}"))
-      end
-
       it 'formats validation errors' do
         log_lines = File.readlines('./spec/fixtures/errors/validation_error_dob.txt')
         allow(Papertrail).to receive(:log_lines_between).and_return(log_lines)
@@ -35,11 +25,24 @@ RSpec.describe SendSlackMessagesForTimecodeJob do
         log_lines = File.readlines('./spec/fixtures/errors/notnull_constraint_violation.txt')
         allow(Papertrail).to receive(:log_lines_between).and_return(log_lines)
 
+        stub_github('slackdog/test', 'app/controllers/admin/organisations/products_controller.rb')
+        
+        pretext = <<~EOM
+        `app_features` must have a value (database constraint)
+        ```
+          def update
+            resource = find_resource(params)
+            resource.update_attributes!(app_features: nil)
+            render json: resource.to_json
+          end
+        ```
+        EOM
+
         attachments = [{
           'color' => 'danger',
           'fallback' => "[some_app] *PG::NotNullViolation: ERROR* 'null value in column \"app_features\" violates not-null constraint'.",
           'mrkdwn_in' => ['pretext', 'text'],
-          'pretext' => "`app_features` must have a value (database constraint)",
+          'pretext' => pretext.strip,
           'text' => File.read('./spec/fixtures/formatted/notnull_constraint_violation.txt').strip
         }]
 
@@ -51,14 +54,56 @@ RSpec.describe SendSlackMessagesForTimecodeJob do
         log_lines = File.readlines('./spec/fixtures/errors/undefined_method_nilclass.txt')
         allow(Papertrail).to receive(:log_lines_between).and_return(log_lines)
 
-        github_request = stub_github('fattymiller/some_app', 'app/controllers/concerns/some_helper_concern.rb')
+        github_request = stub_github('slackdog/test', 'app/controllers/concerns/some_helper_concern.rb')
+
+        pretext = <<~EOM
+        `@company` is null
+        ```
+          def failing_method
+            # this is the method that caused the exception
+            result = @company.foo
+            return result.empty?
+          end
+        ```
+        EOM
 
         attachments = [{
           'color' => 'danger',
           'fallback' => "[some_app] *NoMethodError* 'undefined method `foo' for nil:NilClass'",
           'mrkdwn_in' => ['pretext', 'text'],
-          'pretext' => "Tried calling `foo` on `nil:NilClass`",
+          'pretext' => pretext.strip,
           'text' => File.read('./spec/fixtures/formatted/undefined_method_nilclass.txt').strip
+        }]
+
+        expect(SlackService).to receive(:post_reply).with('123', '456', attachments)
+        SendSlackMessagesForTimecodeJob.perform_now('500', '20181120150057', envelope)
+
+        expect(github_request).to have_been_requested
+      end
+
+      it 'formats nil reference errors with multiple candidates' do
+        log_lines = File.readlines('./spec/fixtures/errors/undefined_method_nilclass_multiple_candidates.txt')
+        allow(Papertrail).to receive(:log_lines_between).and_return(log_lines)
+
+        github_request = stub_github('slackdog/test', 'app/controllers/concerns/some_helper_concern.rb')
+
+        pretext = <<~EOM
+        Either `self`, or `meta` is null
+        ```
+
+          def other_failing_method
+            result = "\#{self.foo} - \#{obj.bar} - \#{self.meta.foo}"
+            return result.empty?
+          end
+        ```
+        EOM
+
+        attachments = [{
+          'color' => 'danger',
+          'fallback' => "[some_app] *NoMethodError* 'undefined method `foo' for nil:NilClass'",
+          'mrkdwn_in' => ['pretext', 'text'],
+          'pretext' => pretext.strip,
+          'text' => File.read('./spec/fixtures/formatted/undefined_method_nilclass_multiple_candidates.txt').strip
         }]
 
         expect(SlackService).to receive(:post_reply).with('123', '456', attachments)

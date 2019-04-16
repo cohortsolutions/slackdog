@@ -1,0 +1,10 @@
+Dec 07 14:48:51 some_app app/web.2:  Started GET "/zh-CN/identity?student_transaction" for 49.81.94.45 at 2018-12-07 04:48:50 +0000
+Dec 07 14:48:51 some_app app/web.2:  Processing by IdentitiesController#show as HTML
+Dec 07 14:48:51 some_app app/web.2:  Completed 500 Internal Server Error in 6ms (ActiveRecord: 0.0ms)
+Dec 07 14:48:51 some_app heroku/router:  at=info method=GET path="/en/transactions/CPS02XXXXXX.pdf?token" host=payments.cohortgo.com request_id=7629d371-ba19-4079-bc54-a3fa26cf5ac1 fwd="54.198.135.21" dyno=web.2 connect=0ms service=988ms status=200 bytes=118603 protocol=https
+Dec 07 14:48:51 some_app app/web.2:  NoMethodError (undefined method `foo' for nil:NilClass):
+Dec 07 14:48:51 some_app app/web.2:    app/controllers/concerns/some_helper_concern.rb:15:in `failing_method'
+Dec 07 14:48:51 some_app app/web.2:    app/controllers/concerns/some_helper_concern.rb:5:in `calling_method'
+Dec 07 14:48:51 some_app app/web.2:    lib/rack_headers.rb:72:in `_call'
+Dec 07 14:48:51 some_app app/web.2:    lib/rack_headers.rb:68:in `call'
+Dec 07 14:48:51 some_app heroku/router:  at=info method=GET path="/transactions/CPS2XXXXXX.pdf?token" host=payments.cohortgo.com request_id=b577306f-b4f8-40af-8686-ef8d0c4c463a fwd="54.198.135.21" dyno=web.1 connect=0ms service=40ms status=302 bytes=729 protocol=https

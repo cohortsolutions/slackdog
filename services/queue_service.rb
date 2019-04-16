@@ -77,7 +77,7 @@ class QueueService
 
       job = Job.new(JSON.parse(json))
       result = job.process!
-      push(job, queue: 'failed') unless result
+      push(json, queue: 'failed') unless result
 
       result
     end

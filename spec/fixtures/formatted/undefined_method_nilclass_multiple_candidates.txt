@@ -1,0 +1,6 @@
+[some_app] *NoMethodError* 'undefined method `foo' for nil:NilClass'
+```
+* controllers/concerns/some_helper_concern.rb      :  15 in failing_method
+* controllers/concerns/some_helper_concern.rb      :   5 in calling_method
+```
+`[GET]` /zh-CN/identity (49.81.94.45)

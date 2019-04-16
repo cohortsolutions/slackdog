@@ -29,7 +29,7 @@ class GithubService
     private
 
     def repo_from_app(app)
-      repo = ENV["GITHUB_APPS_#{app.upcase.gsub('-', '_')}"]
+      repo = ENV.fetch("GITHUB_APPS_#{app.upcase.gsub('-', '_')}")
       return repo unless repo.empty?
     end
   end

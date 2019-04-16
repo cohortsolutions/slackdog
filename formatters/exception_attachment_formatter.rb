@@ -32,7 +32,7 @@ class ExceptionAttachmentFormatter < RequestAttachmentFormatter
         r = processed[:message]
 
         if processed[:context]
-          r += "\n```\n#{processed[:context]}\n```"
+          r += "\n```\n#{processed[:context].join("\n")}\n```"
         end
 
         r
