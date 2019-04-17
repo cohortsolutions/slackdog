@@ -10,11 +10,14 @@ require './formatters/active_job_attachment_formatter'
 class SendSlackMessagesForTimecodeJob < WorkerBase
   SECONDS_IN_DAY = 24 * 60 * 60
   MAX_BUFFER_SECONDS = 1 / SECONDS_IN_DAY.to_f
-  MIN_BUFFER_SECONDS = 35 / SECONDS_IN_DAY.to_f
+  ERROR_CODE_TIME_MAPPING = {
+    '503' => 35,
+    'default' => 1
+  }.freeze
 
   def perform(error_code, timestamp, reply_to)
     origin = DateTime.parse(timestamp)
-    min = origin - MIN_BUFFER_SECONDS
+    min = origin - seconds_back_for(error_code)
     max = origin + MAX_BUFFER_SECONDS
 
     events = Papertrail.compile(min, max)
@@ -23,6 +26,10 @@ class SendSlackMessagesForTimecodeJob < WorkerBase
   end
 
   private
+
+  def seconds_back_for(error_code)
+    (ERROR_CODE_TIME_MAPPING[error_code] || ERROR_CODE_TIME_MAPPING['default']) / SECONDS_IN_DAY.to_f
+  end
 
   def build_timelines(events)
     events.group_by(&:app).map do |app, grouped|
