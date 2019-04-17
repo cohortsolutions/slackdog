@@ -118,7 +118,7 @@ RSpec.describe SendSlackMessagesForTimecodeJob do
       timestamp = '20190416085903'
       reply_to = '1555446899.000700'
 
-      stub_papertrail('./spec/fixtures/errors/papertrail_cache.txt')
+      stub_papertrail('./spec/fixtures/errors/30_seconds_single_500.txt')
       SendSlackMessagesForTimecodeJob.perform_now(error_code, timestamp, reply_to)
     end
 

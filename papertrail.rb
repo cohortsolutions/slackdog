@@ -6,7 +6,7 @@ class Papertrail
     csrf_fail: /Can't verify CSRF token authenticity/,
     filter_chain_redirect: /Filter chain halted as (?<method>[^\s]+) rendered or redirected/,
     redirected: /Redirected to (?<url>.*)/,
-    completed: /Completed (?<code>[\d]{3}) (?<status>.+) in (?<duration>[\d\.]+)ms/,
+    completed: /Completed (?<code>[\d]{3}) (?<status>.+) in (?<duration>[\d\.\,]+)ms/,
     exception_trace: /\s*(?<file>[^:]+):(?<line>[\d]+):in `(?<method>.+)'\z/,
     job_start: /\[ActiveJob\] \[(?<job>[^\]]+)\] \[(?<id>[^\]]+)\] Performing /,
     job_finish: /\[ActiveJob\] \[(?<job>[^\]]+)\] \[(?<id>[^\]]+)\] Performed /,
@@ -14,8 +14,8 @@ class Papertrail
     heroku_addon_info: /source=(?<source>[^\s]+) addon=(?<addon>[^\s]+) (?<info>((?:sample#[^\s]+=[^\s]+)\s?)*)\z/,
     heroku_dyno_info: /source=(?<source>[^\s]+) dyno=(?<dyno>[^\s]+) (?<info>((?:sample#[^\s]+=[^\s]+)\s?)*)\z/,
     heroku_memory_stat: /Process running mem=(?<ramUsed>.+)\((?<ramPercent>[\d\.]+)%\)/,
-    heroku_router_info: /at=info method=(?<method>[^\s]+) path="(?<path>[^\"]+)" host=(?<host>[^\s]+) request_id=.* fwd="(?<ip>[^\"]+)" dyno=(?<dyno>[^\s]+) connect=\d+ms service=(?<duration>[\d]+)ms status=(?<code>[\d]+)/,
-    heroku_router_error: /at=error code=(?<errorCode>[^\s]+) desc="(?<errorDescription>[^\"]+)" method=(?<method>[^\s]+) path="(?<path>[^\"]+)" host=(?<host>[^\s]+) request_id=.* fwd="(?<ip>[^\"]+)" dyno=(?<dyno>[^\s]+) connect=\d+ms service=(?<duration>[\d]+)ms status=(?<code>[\d]+)/,
+    heroku_router_info: /at=info method=(?<method>[^\s]+) path="(?<path>[^\"]+)" host=(?<host>[^\s]+) request_id=.* fwd="(?<ip>[^\"]+)" dyno=(?<dyno>[^\s]+) connect=\d+ms service=(?<duration>[\d\.\,]+)ms status=(?<code>[\d]+)/,
+    heroku_router_error: /at=error code=(?<errorCode>[^\s]+) desc="(?<errorDescription>[^\"]+)" method=(?<method>[^\s]+) path="(?<path>[^\"]+)" host=(?<host>[^\s]+) request_id=.* fwd="(?<ip>[^\"]+)" dyno=(?<dyno>[^\s]+) connect=\d+ms service=(?<duration>[\d\.\,]+)ms status=(?<code>[\d]+)/,
     exception_start: /(?<exception>[^\s]+) \((?<message>.+)\):\z/m,
   }.freeze
 
@@ -35,7 +35,7 @@ class Papertrail
       @time = DateTime.parse(timestamp)
       @app = app
       @process = process
-      @log = log
+      @log = log.strip
 
       preprocess
     end
@@ -44,8 +44,8 @@ class Papertrail
 
     def preprocess
       if process == 'heroku/router'
-        _, override_dyno = /dyno=([^\s]+)/.match(log)
-        self.dyno = "app/#{override_dyno}" if override_dyno
+        _, override_dyno = */dyno=([^\s]+)/.match(log)
+        @process = "app/#{override_dyno}" if override_dyno
       end
     end
   end
@@ -67,6 +67,7 @@ class Papertrail
 
     def add_line(line, type, meta)
       lines << Line.new(line, type, meta)
+      raise 'sdf' if lines.size > 0 && line.app != lines.first.line.app
     end
   end
 
@@ -80,6 +81,7 @@ class Papertrail
     end
 
     def request
+      raise 'yfytfytf'
       @request ||= begin
         started = lines_for(:started).first
         controller = lines_for(:processing).first
@@ -94,6 +96,7 @@ class Papertrail
         {'csrf_failed' => csrf_fail}.tap do |result|
           if started
             result.merge!(started.meta.slice('method', 'path', 'ip'))
+            result['started_at'] = started.line.time
           end
 
           if controller
@@ -102,6 +105,7 @@ class Papertrail
 
           if completed
             result.merge!(completed.meta.slice('code', 'status', 'duration'))
+            result['completed_at'] = completed.line.time
           end
 
           if redirected
@@ -265,11 +269,12 @@ class Papertrail
   end
 
   def process(lines, &block)
-    lines.group_by { |l| [l.app, l.process] }.map do |(app, process), lines|
+    lines.group_by { |l| [l.app, l.process] }.map do |(app, process), grouped_lines|
       cache = []
       unknown_stash = []
 
-      lines.each do |line|
+      @current_group = nil
+      grouped_lines.each do |line|
         key, meta = pattern_match_for(line.log)
 
         if key == :unknown
