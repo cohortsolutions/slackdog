@@ -2,6 +2,8 @@ require 'redis'
 require 'json'
 require 'securerandom'
 
+Dir['./workers/*_job.rb'].each { |f| require f }
+
 class QueueService
   class Job
     def self.queue_with(klass, args)
@@ -50,11 +52,14 @@ class QueueService
 
       begin
         klass = Object.const_get(class_name)
+        puts 'got klass'
         klass && klass.perform_now(*args)
+        puts 'possibly performed'
         puts "[Performed] [#{run_id}] -> #{Time.now - time} seconds"
 
         return true
       rescue => e
+        puts 'failed :('
         message = e.message
         puts "[Failed] [#{run_id}] #{message}"
         puts e.backtrace.join("\n")
@@ -62,6 +67,8 @@ class QueueService
         failed_with(message)
         return false
       end
+
+      puts 'at end'
     end
   end
 
