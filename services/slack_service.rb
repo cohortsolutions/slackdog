@@ -5,6 +5,7 @@ class SlackService
   base_uri 'https://slack.com'
 
   def self.post_reply(channel, reply_to, attachments)
+    puts 'attempting to send reply to slack'
     options = {
       body: {
         'channel' => channel,

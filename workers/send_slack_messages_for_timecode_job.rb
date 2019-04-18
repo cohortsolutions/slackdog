@@ -51,6 +51,7 @@ class SendSlackMessagesForTimecodeJob < WorkerBase
   end
 
   def send_messages(formatters, envelope_data)
+    puts "send_messages called for #{formatters.size} messages"
     attachments = formatters.map(&:to_payload)
     send_message(attachments, envelope_data) unless attachments.empty?
 

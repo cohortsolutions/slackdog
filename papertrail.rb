@@ -257,6 +257,8 @@ class Papertrail
             events << Event.new(app, process, group)
           end
         end
+
+        puts "compile_from loop yielded #{events.size} events"
       end
     end
 
@@ -264,7 +266,9 @@ class Papertrail
 
     def log_lines_between(min, max)
       result = `PAPERTRAIL_API_TOKEN=#{ENV.fetch('PAPERTRAIL_API_TOKEN')} papertrail --min-time '#{min}' --max-time '#{max}'`
-      result.split("\n")
+      result.split("\n").tap do |l|
+        puts "Papertrail returned #{l.size} lines"
+      end
     end
   end
 
