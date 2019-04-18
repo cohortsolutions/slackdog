@@ -6,8 +6,7 @@ RSpec.describe SendSlackMessagesForTimecodeJob do
       let(:envelope) { {'channel' => '123', 'ts' => '456'} }
 
       it 'formats validation errors' do
-        log_lines = File.readlines('./spec/fixtures/errors/validation_error_dob.txt')
-        allow(Papertrail).to receive(:log_lines_between).and_return(log_lines)
+        stub_papertrail('./spec/fixtures/errors/validation_error_dob.txt')
 
         attachments = [{
           "color" => "danger",
@@ -18,13 +17,11 @@ RSpec.describe SendSlackMessagesForTimecodeJob do
         }]
 
         expect(SlackService).to receive(:post_reply).with('123', '456', attachments)
-        SendSlackMessagesForTimecodeJob.perform_now('500', '20181120150057', envelope)
+        SendSlackMessagesForTimecodeJob.perform_now('422', '20191121060742', envelope)
       end
 
       it 'formats database errors' do
-        log_lines = File.readlines('./spec/fixtures/errors/notnull_constraint_violation.txt')
-        allow(Papertrail).to receive(:log_lines_between).and_return(log_lines)
-
+        stub_papertrail('./spec/fixtures/errors/notnull_constraint_violation.txt')
         stub_github('slackdog/test', 'app/controllers/admin/organisations/products_controller.rb')
         
         pretext = <<~EOM
@@ -47,13 +44,11 @@ RSpec.describe SendSlackMessagesForTimecodeJob do
         }]
 
         expect(SlackService).to receive(:post_reply).with('123', '456', attachments)
-        SendSlackMessagesForTimecodeJob.perform_now('500', '20181120150057', envelope)
+        SendSlackMessagesForTimecodeJob.perform_now('500', '20191207124821', envelope)
       end
 
       it 'formats nil reference errors' do
-        log_lines = File.readlines('./spec/fixtures/errors/undefined_method_nilclass.txt')
-        allow(Papertrail).to receive(:log_lines_between).and_return(log_lines)
-
+        stub_papertrail('./spec/fixtures/errors/undefined_method_nilclass.txt')
         github_request = stub_github('slackdog/test', 'app/controllers/concerns/some_helper_concern.rb')
 
         pretext = <<~EOM
@@ -76,15 +71,13 @@ RSpec.describe SendSlackMessagesForTimecodeJob do
         }]
 
         expect(SlackService).to receive(:post_reply).with('123', '456', attachments)
-        SendSlackMessagesForTimecodeJob.perform_now('500', '20181120150057', envelope)
+        SendSlackMessagesForTimecodeJob.perform_now('500', '20191207144851', envelope)
 
         expect(github_request).to have_been_requested
       end
 
       it 'formats nil reference errors with multiple candidates' do
-        log_lines = File.readlines('./spec/fixtures/errors/undefined_method_nilclass_multiple_candidates.txt')
-        allow(Papertrail).to receive(:log_lines_between).and_return(log_lines)
-
+        stub_papertrail('./spec/fixtures/errors/undefined_method_nilclass_multiple_candidates.txt')
         github_request = stub_github('slackdog/test', 'app/controllers/concerns/some_helper_concern.rb')
 
         pretext = <<~EOM
@@ -107,7 +100,7 @@ RSpec.describe SendSlackMessagesForTimecodeJob do
         }]
 
         expect(SlackService).to receive(:post_reply).with('123', '456', attachments)
-        SendSlackMessagesForTimecodeJob.perform_now('500', '20181120150057', envelope)
+        SendSlackMessagesForTimecodeJob.perform_now('500', '20191207144851', envelope)
 
         expect(github_request).to have_been_requested
       end

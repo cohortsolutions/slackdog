@@ -23,8 +23,13 @@ class SendSlackMessagesForTimecodeJob < WorkerBase
     max = origin + MAX_BUFFER_SECONDS
 
     events = Papertrail.compile(min, max)
-    timelines = build_timelines(events)
-    send_messages(timelines, reply_to)
+    formatted_events = format_events(events).select do |formatted|
+      formatted.event.exception && formatted.event.request &&
+        formatted.event.exception['errored_at'] == origin &&
+        formatted.event.request['code'] == error_code
+    end
+
+    send_messages(formatted_events, reply_to)
   end
 
   private
@@ -33,52 +38,23 @@ class SendSlackMessagesForTimecodeJob < WorkerBase
     (ERROR_CODE_TIME_MAPPING[error_code] || ERROR_CODE_TIME_MAPPING['default']) / SECONDS_IN_DAY.to_f
   end
 
-  def build_timelines(events)
-    events.group_by(&:app).map do |app, grouped|
-      timeline = []
-      current_request_group = []
-
-      grouped.each do |event|
-        if !event.request || !event.exception
-          current_request_group << event
-          next
-        end
-
-        if current_request_group.any?
-          timeline << [:request_group, current_request_group]
-          current_request_group.clear
-        end
-
-        if event.exception
-          timeline << ExceptionAttachmentFormatter.new(event)
-        elsif event.active_job
-          timeline << ActiveJobAttachmentFormatter.new(event)
-        # elsif event.debug_info
-        #   timeline << [:debug, event]
-        end
+  def format_events(events)
+    events.map do |event|
+      if event.exception
+        ExceptionAttachmentFormatter.new(event)
+      elsif event.active_job
+        ActiveJobAttachmentFormatter.new(event)
+      # elsif event.debug_info
+      #   DebugAttachmentFormatter.new(event)
+      elsif event.request
+        RequestAttachmentFormatter.new(event)
       end
-
-      if current_request_group.any?
-        timeline << [:request_group, current_request_group]
-      end
-
-      [app, timeline]
-    end.to_h
+    end.compact
   end
 
-  def send_messages(timelines, envelope_data)
-    timelines.each do |app, timeline|
-      binding.pry
-      attachments = []
-
-      timeline.each do |formatter, event|
-        next unless formatter.is_a?(AttachmentFormatter)
-        attachments << formatter.to_payload
-      end
-
-      next if attachments.empty?
-      send_message(attachments, envelope_data)
-    end
+  def send_messages(formatters, envelope_data)
+    attachments = formatters.map(&:to_payload)
+    send_message(attachments, envelope_data) unless attachments.empty?
 
     nil
   end

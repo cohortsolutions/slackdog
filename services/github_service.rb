@@ -13,7 +13,7 @@ class GithubService
 
       contents = begin
         client.contents(repo, path: path, accept: 'application/vnd.github.v3.raw')
-      rescue Octokit::NotFound => e
+      rescue Octokit::NotFound
         return nil
       end
 

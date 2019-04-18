@@ -6,7 +6,6 @@ module PapertrailHelpers
   end
 
   def stub_papertrail(file)
-    allow(Papertrail).to receive(:log_lines_between).
-      and_return(File.read(file).split("\n"))
+    allow(Papertrail).to receive(:log_lines_between).and_return(File.readlines(file))
   end
 end

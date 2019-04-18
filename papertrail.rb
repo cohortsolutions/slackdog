@@ -67,7 +67,6 @@ class Papertrail
 
     def add_line(line, type, meta)
       lines << Line.new(line, type, meta)
-      raise 'sdf' if lines.size > 0 && line.app != lines.first.line.app
     end
   end
 
@@ -81,7 +80,6 @@ class Papertrail
     end
 
     def request
-      raise 'yfytfytf'
       @request ||= begin
         started = lines_for(:started).first
         controller = lines_for(:processing).first
@@ -141,6 +139,7 @@ class Papertrail
           type = line.meta['exception']
           message = line.meta['message']
           match = /(?<subtype>.+): (?<innerMessage>.+)/.match(message)
+          errored_at = line.line.time
         end
 
         if match
@@ -155,6 +154,7 @@ class Papertrail
 
         {
           'type' => type,
+          'errored_at' => errored_at,
           'message' => message,
           'subtype' => subtype,
           'router_error' => router_error_message,
@@ -285,8 +285,8 @@ class Papertrail
           unknown_stash.clear
         end
 
-        stashing = STASHING_PATTERNS.include?(key)
-        current_group(cache, stash: stashing).add_line(line, key, meta)
+        @current_group = nil if STASHING_PATTERNS.include?(key)
+        current_group(cache).add_line(line, key, meta)
       end
 
       result = [app, process, cache]
@@ -301,9 +301,7 @@ class Papertrail
 
   private
 
-  def current_group(cache, stash: false)
-    @current_group = nil if stash
-
+  def current_group(cache)
     @current_group ||= begin
       RequestGroup.new.tap do |result|
         cache << result
