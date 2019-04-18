@@ -7,8 +7,6 @@ require './workers/worker_base'
 require './formatters/exception_attachment_formatter'
 require './formatters/active_job_attachment_formatter'
 
-require 'pry'
-
 class SendSlackMessagesForTimecodeJob < WorkerBase
   SECONDS_IN_DAY = 24 * 60 * 60
   MAX_BUFFER_SECONDS = 1 / SECONDS_IN_DAY.to_f
