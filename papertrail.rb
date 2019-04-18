@@ -265,7 +265,9 @@ class Papertrail
     private
 
     def log_lines_between(min, max)
+      puts "log_lines_between '#{min}' and '#{max}'"
       result = `PAPERTRAIL_API_TOKEN=#{ENV.fetch('PAPERTRAIL_API_TOKEN')} papertrail --min-time '#{min}' --max-time '#{max}'`
+      puts "got result: (#{result.size} bytes)"
       result.split("\n").tap do |l|
         puts "Papertrail returned #{l.size} lines"
       end
