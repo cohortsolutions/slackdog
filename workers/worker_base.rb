@@ -6,6 +6,8 @@ class WorkerBase
   end
 
   def self.perform_now(*args)
+    puts 'in perform_now'
     new.perform(*args)
+    puts 'after perform_now'
   end
 end

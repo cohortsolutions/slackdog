@@ -52,7 +52,7 @@ class QueueService
 
       begin
         klass = Object.const_get(class_name)
-        puts 'got klass'
+        puts 'got klass' if klass
         klass && klass.perform_now(*args)
         puts 'possibly performed'
         puts "[Performed] [#{run_id}] -> #{Time.now - time} seconds"

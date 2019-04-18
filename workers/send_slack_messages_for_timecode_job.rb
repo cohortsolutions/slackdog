@@ -16,6 +16,7 @@ class SendSlackMessagesForTimecodeJob < WorkerBase
   }.freeze
 
   def perform(error_code, timestamp, reply_to)
+    puts 'performing SendSlackMessagesForTimecodeJob'
     origin = DateTime.parse(timestamp)
     min = origin - seconds_back_for(error_code)
     max = origin + MAX_BUFFER_SECONDS
