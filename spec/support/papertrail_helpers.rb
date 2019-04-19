@@ -1,4 +1,4 @@
-require './papertrail'
+require './services/papertrail_service'
 
 module PapertrailHelpers
   def disable_papertrail!

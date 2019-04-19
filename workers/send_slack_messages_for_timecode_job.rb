@@ -1,5 +1,5 @@
 require 'date'
-require './papertrail'
+require './services/papertrail_service'
 require './services/slack_service'
 
 require './workers/worker_base'
