@@ -1,4 +1,5 @@
 require 'papertrail'
+require 'chronic'
 
 class PapertrailService
   STASHING_PATTERNS = %i(started job_start).freeze
@@ -270,7 +271,7 @@ class PapertrailService
       puts "log_lines_between '#{min}' and '#{max}'"
 
       [].tap do |results|
-        connection.each_event('', {min_time: min, max_time: max}) do |event|
+        connection.each_event('', {min_time: Chronic.parse(min.to_s), max_time: Chronic.parse(max.to_s)}) do |event|
           results << event.to_s
         end
 
