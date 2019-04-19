@@ -1,4 +1,6 @@
-class Papertrail
+require 'papertrail'
+
+class PapertrailService
   STASHING_PATTERNS = %i(started job_start).freeze
   PATTERNS = {
     started: /Started (?<method>.+) \"(?<path>.+)\" for (?<ip>[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3})/,
@@ -266,10 +268,26 @@ class Papertrail
 
     def log_lines_between(min, max)
       puts "log_lines_between '#{min}' and '#{max}'"
-      result = `PAPERTRAIL_API_TOKEN=#{ENV.fetch('PAPERTRAIL_API_TOKEN')} papertrail --min-time '#{min}' --max-time '#{max}'`
-      puts "got result: (#{result.size} bytes)"
-      result.split("\n").tap do |l|
-        puts "Papertrail returned #{l.size} lines"
+
+      [].tap do |results|
+        connection.each_event('', {min_time: min, max_time: max}) do |event|
+          results << event.to_s
+        end
+
+        puts "Papertrail returned #{results.size} lines"
+      end
+    end
+
+    def connection
+      @connection ||= begin
+        Papertrail::Connection.new({
+          configfile: nil,
+          delay: 2,
+          follow: false,
+          token: ENV.fetch('PAPERTRAIL_API_TOKEN'),
+          color: :program,
+          force_color: false,
+        })
       end
     end
   end

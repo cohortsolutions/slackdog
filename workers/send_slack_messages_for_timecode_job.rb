@@ -21,7 +21,7 @@ class SendSlackMessagesForTimecodeJob < WorkerBase
     min = origin - seconds_back_for(error_code)
     max = origin + MAX_BUFFER_SECONDS
 
-    events = Papertrail.compile(min, max)
+    events = PapertrailService.compile(min, max)
     formatted_events = format_events(events).select do |formatted|
       formatted.event.exception && formatted.event.request &&
         formatted.event.exception['errored_at'] == origin &&
