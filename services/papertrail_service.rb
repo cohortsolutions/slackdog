@@ -1,3 +1,4 @@
+require 'date'
 require 'papertrail'
 require 'chronic'
 
@@ -23,22 +24,13 @@ class PapertrailService
   }.freeze
 
   class LogLine
-    PARSER = /([a-zA-Z\s\d:]{15}) ([^\s]+) ([^:]+): (.*)/
-
     attr_reader :time, :app, :process, :log
 
     def initialize(line)
-      _, timestamp, app, process, log = *PARSER.match(line)
-
-      raise "`timestamp` is nil for '#{line}'" if timestamp.nil?
-      raise "`app` is nil for '#{line}'" if app.nil?
-      raise "`process` is nil for '#{line}'" if process.nil?
-      raise "`log` is nil for '#{line}'" if log.nil?
-
-      @time = DateTime.parse(timestamp)
-      @app = app
-      @process = process
-      @log = log.strip
+      @time = line.received_at.to_datetime
+      @app = line.data['source_name']
+      @process = line.data['program']
+      @log = line.data['message'].strip
 
       preprocess
     end
@@ -272,7 +264,7 @@ class PapertrailService
 
       [].tap do |results|
         connection.each_event('', {min_time: Chronic.parse(min.to_s), max_time: Chronic.parse(max.to_s)}) do |event|
-          results << event.to_s
+          results << event
         end
 
         puts "Papertrail returned #{results.size} lines"
@@ -288,6 +280,7 @@ class PapertrailService
           token: ENV.fetch('PAPERTRAIL_API_TOKEN'),
           color: :program,
           force_color: false,
+          json: true
         })
       end
     end
