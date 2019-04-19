@@ -35,6 +35,8 @@ class Slack
 
     def message(event)
       s = event['text']
+      puts "received '#{s}'"
+
       _, error_code, timestamp = */Error Code: ([\d]{3}) - ([\d]{14})/.match(s)
       return if error_code.nil? || timestamp.nil?
       puts "query requested #{error_code} and #{timestamp}"
