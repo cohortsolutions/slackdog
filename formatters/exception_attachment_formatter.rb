@@ -6,33 +6,36 @@ class ExceptionAttachmentFormatter < RequestAttachmentFormatter
     exception = event.exception
     return unless exception
 
-    fallback = if exception['subtype']
-      "[#{event.app}] *#{exception['subtype']}* '#{exception['message']}'."
+    exception_message = if exception['subtype']
+      "`[#{event.app}]` *#{exception['subtype']}* '#{exception['message']}'."
     else
-      "[#{event.app}] *#{exception['type']}* '#{exception['message']}'"
+      "`[#{event.app}]` *#{exception['type']}* '#{exception['message']}'"
     end
 
     if router_error = exception['router_error']
-      fallback << " (#{router_error})"
+      exception_message << " (#{router_error})"
     end
 
     processed = ExceptionMessageProcessor.process(event.app, exception)
 
     text = [
-      fallback,
+      exception_message,
+      request_event_text(show_ip: true),
       backtrace_lines_from(exception['backtrace']),
-      request_event_text(show_ip: true)
     ].compact
 
     {
       'color' => 'danger',
-      'fallback' => fallback,
+      'fallback' => exception_message,
       'mrkdwn_in' => ['pretext', 'text'],
       'pretext' => if processed
         r = processed[:message]
 
-        if processed[:context]
-          r += "\n```\n#{processed[:context].join("\n")}\n```"
+        if processed[:code_context]
+          filename = processed[:code_context][:file].to_s.split('/').last
+          line_number = processed[:code_context][:line]
+          line_of_code = processed[:code_context][:focus]
+          r += "\n```\n# #{filename}:#{line_number}\n#{line_of_code}\n```"
         end
 
         r

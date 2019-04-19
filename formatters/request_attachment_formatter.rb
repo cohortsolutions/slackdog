@@ -11,13 +11,13 @@ class RequestAttachmentFormatter < AttachmentFormatter
 
     if request['path']
       path = request['path'].split('?', 2).first
-      path = "#{path[0..4]}...#{path[-35..-1]}" if path.size > 43 # 5 + 35 + 3 (for ...)
+      path = "#{path[0..4]}...#{path[-35..-1]}" if path.size > 43 # 5 + 35 + 3 (for '...')
       text << "`[#{request['method']}]` #{path}"
     end
 
     redirected = request['redirected_to']
     redirection_prompt = if filter_chain_redirected_by = request['filter_chain_redirected_by']
-      "_redirected by #{filter_chain_redirected_by}_"
+      "_redirected by `#{filter_chain_redirected_by}`_"
     elsif redirected
       '_redirected_'
     end

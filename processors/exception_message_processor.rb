@@ -23,7 +23,7 @@ class ExceptionMessageProcessor
         end
 
         if file && line > 0 && result = GithubService.get_line(app, file, line)
-          response[:context] = result[:context]
+          response[:code_context] = result.merge(file: file, line: line)
           captures['exceptionLine'] = result[:focus]
         end
 
