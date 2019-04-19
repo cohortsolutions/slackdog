@@ -2,6 +2,7 @@ require './services/queue_service'
 
 class WorkerBase
   def self.perform_later(*args)
+    puts "queueing #{self.name} with #{args}"
     QueueService::Job.queue_with(self, args)
   end
 
