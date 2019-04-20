@@ -11,7 +11,7 @@ class PapertrailService
     filter_chain_redirect: /Filter chain halted as (?<method>[^\s]+) rendered or redirected/,
     redirected: /Redirected to (?<url>.*)/,
     completed: /Completed (?<code>[\d]{3}) (?<status>.+) in (?<duration>[\d\.\,]+)ms/,
-    exception_trace: /\s*(?<file>[^:\s]+):(?<line>[\d]+):in `(?<method>.+)'\z/,
+    exception_trace: /(?<file>[^:\s]+):(?<line>[\d]+):in `(?<method>.+)'\z/,
     job_start: /\[ActiveJob\] \[(?<job>[^\]]+)\] \[(?<id>[^\]]+)\] Performing /,
     job_finish: /\[ActiveJob\] \[(?<job>[^\]]+)\] \[(?<id>[^\]]+)\] Performed /,
     job_error: /\[ActiveJob\] \[(?<job>[^\]]+)\] \[(?<id>[^\]]+)\] Error performing .* [\d\.]+ms: (?<exception>[^\s]+) \((?<message>.+)\):\z/,
