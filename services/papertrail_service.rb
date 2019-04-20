@@ -134,6 +134,7 @@ class PapertrailService
           type = line.meta['exception']
           message = line.meta['message']
           match = /(?<subtype>.+): (?<innerMessage>.+)/.match(message)
+          raw = line.line.log
           errored_at = line.line.time
         end
 
@@ -151,6 +152,7 @@ class PapertrailService
           'type' => type,
           'errored_at' => errored_at,
           'message' => message,
+          'raw_message' => raw,
           'subtype' => subtype,
           'router_error' => router_error_message,
           'backtrace' => lines_for(:exception_trace).map do |trace|

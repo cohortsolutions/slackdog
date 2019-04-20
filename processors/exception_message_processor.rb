@@ -1,7 +1,7 @@
 require './services/github_service'
 
 class ExceptionMessageProcessor
-  MATCHING_KEYS = %w(message type).freeze
+  MATCHING_KEYS = %w(message type raw_message).freeze
 
   class << self
     def process(app, exception)
@@ -70,6 +70,24 @@ class ExceptionMessageProcessor
         {
           matches: /ActiveRecord::ConnectionTimeoutError/,
           message: ->(captures) { "It took too long to get a database connection.\n - Maybe try again later, or\n - Request an application restart." }
+        },
+        {
+          matches: /RestClient::.*\((?<rest_client_error_code>\d{3}) (?<rest_client_status>.*)\)/,
+          message: lambda do |captures|
+            rest_client_error_code = captures['rest_client_error_code']
+
+            if rest_client_error_code == '503'
+              "We timed out trying to query a remote service.\n - Maybe try again later, or\n - Consider restarting the application."
+            elsif rest_client_error_code == '404'
+              'We attempted to query a remote service, but the resource could not be found'
+            elsif rest_client_error_code.to_s.start_with?('5') || rest_client_error_code.to_s.start_with?('4')
+              'An fatal error occurred while querying a remote service. This is all we know at this stage.'
+            elsif rest_client_error_code.to_s.start_with?('3')
+              'We encountered an unexpected redirect when querying a remote service.'
+            else
+              'We attempted to query a remote service, but this has unfortunately failed.'
+            end
+          end
         }
       ].freeze
     end
