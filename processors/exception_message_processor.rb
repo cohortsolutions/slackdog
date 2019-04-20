@@ -1,13 +1,17 @@
 require './services/github_service'
 
 class ExceptionMessageProcessor
+  MATCHING_KEYS = %w(message type).freeze
+
   class << self
     def process(app, exception)
-      exception_message = exception['message']
       backtrace = exception['backtrace']
 
       patterns.each do |config|
-        match = exception_message.match(config[:matches])
+        match = nil
+        MATCHING_KEYS.each do |key|
+          match ||= exception[key].match(config[:matches])
+        end
         next unless match
 
         response = {}
@@ -62,6 +66,10 @@ class ExceptionMessageProcessor
         {
           matches: /null value in column \"(?<field>.*)\" violates not-null constraint/,
           message: ->(captures) { "`#{captures['field']}` must have a value (database constraint)" }
+        },
+        {
+          matches: /ActiveRecord::ConnectionTimeoutError/,
+          message: ->(captures) { "It took too long to get a database connection.\n - Maybe try again later, or\n - Request an application restart." }
         }
       ].freeze
     end
