@@ -252,22 +252,16 @@ class PapertrailService
             events << Event.new(app, process, group)
           end
         end
-
-        puts "compile_from loop yielded #{events.size} events"
       end
     end
 
     private
 
     def log_lines_between(min, max)
-      puts "log_lines_between '#{min}' and '#{max}'"
-
       [].tap do |results|
         connection.each_event('', {min_time: Chronic.parse(min.to_s), max_time: Chronic.parse(max.to_s)}) do |event|
           results << event
         end
-
-        puts "Papertrail returned #{results.size} lines"
       end
     end
 

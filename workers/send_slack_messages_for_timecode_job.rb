@@ -16,7 +16,6 @@ class SendSlackMessagesForTimecodeJob < WorkerBase
   }.freeze
 
   def perform(error_code, timestamp, reply_to)
-    puts 'performing SendSlackMessagesForTimecodeJob'
     origin = DateTime.parse(timestamp)
     min = origin - seconds_back_for(error_code)
     max = origin + MAX_BUFFER_SECONDS
@@ -52,7 +51,6 @@ class SendSlackMessagesForTimecodeJob < WorkerBase
   end
 
   def send_messages(formatters, envelope_data)
-    puts "send_messages called for #{formatters.size} messages"
     attachments = formatters.map(&:to_payload)
     send_message(attachments, envelope_data) unless attachments.empty?
 
